@@ -1,0 +1,8 @@
+/build
+/LocalRequest.groovy
+/EsperRequest.groovy
+.project
+.classpath
+/bin
+/.settings
+/.gradle
