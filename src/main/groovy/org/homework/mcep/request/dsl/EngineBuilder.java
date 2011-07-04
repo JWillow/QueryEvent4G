@@ -4,16 +4,16 @@ import java.util.Map;
 
 import org.homework.mcep.dsl.builder.Builder;
 import org.homework.mcep.dsl.builder.GroovySupportingBuilder;
-import org.homework.mcep.request.Engine;
-import org.homework.mcep.request.RequestEngine;
+import org.homework.mcep.request.RequestDispatcher;
+import org.homework.mcep.request.Request;
 
-public class EngineBuilder implements GroovySupportingBuilder<Engine> {
+public class EngineBuilder implements GroovySupportingBuilder<RequestDispatcher> {
 
-	private Engine.Builder internalBuilder = Engine.builder();
+	private RequestDispatcher.Builder internalBuilder = RequestDispatcher.builder();
 
-	public Engine build() {
-		Engine engine = internalBuilder.build();
-		internalBuilder = Engine.builder();
+	public RequestDispatcher build() {
+		RequestDispatcher engine = internalBuilder.build();
+		internalBuilder = RequestDispatcher.builder();
 		return engine;
 	}
 
@@ -27,8 +27,8 @@ public class EngineBuilder implements GroovySupportingBuilder<Engine> {
 
 	public GroovySupportingBuilder withBuilder(Builder builder) {
 		Object object = builder.build();
-		if (object instanceof RequestEngine) {
-			internalBuilder.withRequestEngine((RequestEngine) object);
+		if (object instanceof Request) {
+			internalBuilder.withRequestEngine((Request) object);
 		} else {
 			
 		}

@@ -1,6 +1,8 @@
 package org.homework.mcep.request.count
 
 import org.homework.mcep.Event;
+import org.homework.mcep.request.RequestDefinition;
+import org.homework.mcep.request.Request;
 import org.homework.mcep.request.Window;
 import org.homework.mcep.request.Window.State;
 
@@ -14,8 +16,8 @@ class CountRequestEngineTest extends Specification {
 	def groupId = 'myId'
 	def event = new Event(attributes:[test:"value"])
 	Window window = Mock(Window)
-	CountRequest request = new CountRequest(date:{13445l},timeNotificationInterval:500,groupBy:{groupId},accept:{true},notification:{assert false})
-	CountRequestEngine countRequestEngine = new CountRequestEngine(request:request)
+	RequestDefinition request = new RequestDefinition(date:{13445l},timeNotificationInterval:500,groupBy:{groupId},accept:{true},notification:{assert false})
+	Request countRequestEngine = new Request(request:request)
 
 	def registerWindowInEngine() {
 		window.id >> groupId

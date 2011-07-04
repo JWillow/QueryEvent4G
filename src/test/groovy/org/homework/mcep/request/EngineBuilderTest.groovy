@@ -1,18 +1,20 @@
 package org.homework.mcep.request
 
+import org.homework.mcep.request.dsl.GRequestEngineBuilder;
+
 import spock.lang.Specification
 
 class EngineBuilderTest extends Specification {
 
 	def engineBuilder = new GRequestEngineBuilder()
-	Engine engine = null
+	RequestDispatcher engine = null
 	def "Création d'un moteur traitant 2 requêtes de type count"() {
 		setup:
 			def acceptClosure = {}
 			def acceptClosure1 = {}
 		
 		when: 
-		Engine engine = engineBuilder.engine() {
+		RequestDispatcher engine = engineBuilder.engine() {
 			count(description:"req")
 			count(description:"req1")
 		}

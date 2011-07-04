@@ -16,7 +16,7 @@ class Window {
 	def state = OPEN
 
 	/** Evénements matchant les requestEventDefinitions */
-	def proceedEvents = []
+	List<Event> proceedEvents = []
 
 	/** Définition des événements à matcher */
 	List<EventDefinition> eventDefinitions = []

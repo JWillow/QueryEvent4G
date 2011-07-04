@@ -1,6 +1,5 @@
 package org.homework.mcep.request.dsl
 
-import org.homework.mcep.request.GRequestEngineBuilder;
 
 import spock.lang.Specification;
 
