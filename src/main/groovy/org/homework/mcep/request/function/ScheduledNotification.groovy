@@ -82,7 +82,7 @@ class ScheduledNotification implements EventListener {
 		}
 
 		public Builder onFunction(List<Integer> functionIndexes) {
-			functionsIndexHandled = functionsIndexHandled
+			this.functionsIndexHandled = functionIndexes
 			return this;
 		}
 
