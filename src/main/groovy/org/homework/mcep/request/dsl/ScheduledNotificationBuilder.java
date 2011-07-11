@@ -1,13 +1,12 @@
 package org.homework.mcep.request.dsl;
 
-import groovy.lang.Closure;
-
 import java.util.List;
 import java.util.Map;
 
 import org.homework.mcep.dsl.builder.Builder;
 import org.homework.mcep.dsl.builder.GroovySupportingBuilder;
-import org.homework.mcep.request.function.ScheduledNotification;
+import org.homework.mcep.request.Function;
+import org.homework.mcep.request.eventlistener.ScheduledNotification;
 
 public class ScheduledNotificationBuilder implements
 		GroovySupportingBuilder<ScheduledNotification> {
@@ -28,14 +27,10 @@ public class ScheduledNotificationBuilder implements
 	public GroovySupportingBuilder withAttributes(Map<String, Object> attributes) {
 		for (Map.Entry<String, Object> entry : attributes.entrySet()) {
 			String attribut = entry.getKey();
-			if (attribut.equals("date")) {
-				internalBuilder.withDateExtractor((Closure<?>) entry.getValue());
-			} else if (attribut.equals("interval")) {
+			if (attribut.equals("interval")) {
 				internalBuilder.withInterval((Integer) entry.getValue());
 			} else if (attribut.equals("reset")) {
 				internalBuilder.reset((Boolean) entry.getValue());
-			} else if(attribut.equals("applyToFunctionIndex")) {
-				internalBuilder.onFunction((List<Integer>) entry.getValue());
 			} else {
 				throw new IllegalArgumentException();
 			}
@@ -44,7 +39,12 @@ public class ScheduledNotificationBuilder implements
 	}
 
 	public GroovySupportingBuilder withBuilder(Builder builder) {
-		throw new UnsupportedOperationException();
+		Object object = builder.build();
+		if (object instanceof Function) {
+			internalBuilder.onFunction((Function) object);
+		} else {
+			throw new UnsupportedOperationException();
+		}
+		return this;
 	}
-
 }

@@ -6,7 +6,7 @@ public interface Extractor {
 
 	String getEventName();
 	
-	Map<String,String> extract(String line);
+	Map<String,Object> extract(String line);
 	
 	boolean satisfiedDependency(Map<String,String> collectedAttributes);
 	

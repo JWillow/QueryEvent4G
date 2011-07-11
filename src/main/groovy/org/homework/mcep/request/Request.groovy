@@ -12,9 +12,10 @@ class Request {
 	private RequestDefinition requestDefinition
 	private Map<String,Window> windows = [:]
 
-
 	private void notifyFunctions(Window window) {
-		requestDefinition.functions.each {it.onPatternDetection requestDefinition, window.proceedEvents}
+		requestDefinition.functions.each {
+			it.onPatternDetection(requestDefinition, window.proceedEvents)
+		}
 	}
 
 	void get() {

@@ -31,7 +31,7 @@ class Window {
 			return state
 		}
 		proceedEvents << event
-		if(!eventDefinitions[proceedEvents.size() - 1].evaluate(event)) {
+		if(!eventDefinitions[proceedEvents.size() - 1].evaluate(proceedEvents)) {
 			state = BROKEN
 			return state
 		}

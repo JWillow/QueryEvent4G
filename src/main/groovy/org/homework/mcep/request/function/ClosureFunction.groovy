@@ -13,7 +13,6 @@ class ClosureFunction implements Function {
 	Closure core;
 	Map<Object,Object> context = [KEYWORD :null];
 
-
 	void onPatternDetection(RequestDefinition requestDefinition, List<Event> events) {
 		core(context,events)
 	}

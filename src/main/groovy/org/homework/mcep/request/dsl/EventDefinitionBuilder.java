@@ -30,6 +30,8 @@ public class EventDefinitionBuilder implements
 				internalBuilder.withSelect((Closure<?>) entry.getValue());
 			} else if (attribut.equals("name")) {
 				internalBuilder.withEventName((String) entry.getValue());
+			} else if (attribut.equals("attributes")) {
+				internalBuilder.selectOnAttributes((Map) entry.getValue());
 			} else {
 				throw new IllegalArgumentException(String.format(
 						"Field [%s] unknown for EventDefinitionBuilder !",

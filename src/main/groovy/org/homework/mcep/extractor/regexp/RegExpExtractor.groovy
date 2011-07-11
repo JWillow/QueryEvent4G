@@ -2,6 +2,7 @@ package org.homework.mcep.extractor.regexp
 
 import org.homework.mcep.extractor.AbstractExtractor;
 import org.homework.mcep.extractor.DependOnToken;
+import org.homework.mcep.extractor.PostProcess;
 
 class RegExpExtractor extends AbstractExtractor {
 	
@@ -9,7 +10,7 @@ class RegExpExtractor extends AbstractExtractor {
 	String exp 
 	List<String> tokens = []
 	
-	public Map<String,String> extract(String line) {
+	public Map<String,String> applyExtraction(String line) {
 		def collect = [:]
 		def matcher = (line =~ exp)
 		if(matcher.find()) {
@@ -38,6 +39,7 @@ class RegExpExtractor extends AbstractExtractor {
 		private String exp
 		private List<String> tokens = []
 		private List<DependOnToken> dependOnTokens = []
+		private List<PostProcess> postProcesses = []
 
 		public Builder produceEvent(String eventName) {
 			this.eventName = eventName
@@ -56,12 +58,18 @@ class RegExpExtractor extends AbstractExtractor {
 			return this
 		}
 				
+		public Builder addPostProcess(PostProcess arg) {
+			postProcesses << arg
+			return this
+		}
+		
 		public RegExpExtractor build() {
 			RegExpExtractor extractor = new RegExpExtractor()
 			extractor.eventName = this.eventName
 			extractor.dependOnTokens = this.dependOnTokens
 			extractor.exp = this.exp
 			extractor.tokens = this.tokens
+			extractor.postProcesses = this.postProcesses
 			return extractor
 		}
 	}

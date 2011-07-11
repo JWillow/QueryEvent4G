@@ -1,18 +1,18 @@
-package org.homework.mcep.request.function
+package org.homework.mcep.request.eventlistener
 
 import java.text.SimpleDateFormat;
+import java.util.List;
 
 import org.homework.mcep.Event
 import org.homework.mcep.request.EventListener;
+import org.homework.mcep.request.Function;
+import org.homework.mcep.request.Functions;
 import org.homework.mcep.request.RequestDefinition;
 import org.homework.mcep.request.Window;
 
-class ScheduledNotification implements EventListener {
+class ScheduledNotification implements EventListener, Functions {
 
-	private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
-	
-	Closure dateExtractor;
-	List<Integer> functionsIndexHandled;
+	List<Function> functionsToNotified;
 	int interval
 	boolean reset
 	long currentTime = -1
@@ -25,25 +25,21 @@ class ScheduledNotification implements EventListener {
 	}
 
 	public void beforeEventProcessing(RequestDefinition requestDefinition, Collection<Window> windows, Event event) {
-		long dateInMillis = dateExtractor(event)
+		long dateInMillis = event.attributes.time
 		initCurrentTimeIfNecessary(dateInMillis)
 		if(currentTime + interval < dateInMillis) {
-			println "-- Notification at ${sdf.format(new Date(currentTime + interval))}"
-			if(functionsIndexHandled.isEmpty()) {
-				requestDefinition.functions*.get()
+			functionsToNotified.each {
+				it.get()
 				if(reset) {
-					requestDefinition.functions*.reset()
-				}
-			} else {
-				functionsIndexHandled.each { index ->
-					requestDefinition.functions[index].get()
-					if(reset) {
-						requestDefinition.functions[index].reset()
-					}
+					it.reset()
 				}
 			}
 			currentTime += interval
 		}
+	}
+
+	public List<Function> getFunctions() {
+		return functionsToNotified;
 	}
 
 	public void afterEventProcessed(RequestDefinition requestDefinition, Collection<Window> windows, Event event) {
@@ -61,15 +57,9 @@ class ScheduledNotification implements EventListener {
 
 	public static class Builder {
 
-		private Closure dateExtractor = {System.currentTimeMillis()}
-		List<Integer> functionsIndexHandled = []
+		List<Function> functionsToNotified = []
 		int interval = 1000
 		boolean reset = true
-
-		public Builder withDateExtractor(Closure dateExtractor) {
-			this.dateExtractor = dateExtractor
-			return this
-		}
 
 		public Builder withInterval(int interval) {
 			this.interval = interval
@@ -81,15 +71,14 @@ class ScheduledNotification implements EventListener {
 			return this
 		}
 
-		public Builder onFunction(List<Integer> functionIndexes) {
-			this.functionsIndexHandled = functionIndexes
+		public Builder onFunction(Function functionToNotified) {
+			this.functionsToNotified << functionToNotified
 			return this;
 		}
 
 		public ScheduledNotification build() {
 			ScheduledNotification sn = new ScheduledNotification();
-			sn.dateExtractor = this.dateExtractor
-			sn.functionsIndexHandled = this.functionsIndexHandled
+			sn.functionsToNotified = this.functionsToNotified
 			sn.interval = this.interval
 			sn.reset = this.reset
 			return sn;

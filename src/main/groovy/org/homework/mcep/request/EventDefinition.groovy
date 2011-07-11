@@ -4,11 +4,21 @@ import org.homework.mcep.Event;
 
 class EventDefinition {
 	def name
-	def select = {true}
+	def attributes
+	Closure select = {true}
 	
-	boolean evaluate(Event event) {
+	boolean evaluate(List<Event> events) {
+		Event event = events.get(events.size() - 1)
 		if(!event.names.contains(name)) {
 			return false
+		}
+		if(attributes.size() != 0) {
+			boolean result = attributes.every {key, value ->
+				value == event.attributes[key] 
+			}
+			if(!result) {
+				return false;
+			}
 		}
 		return select(event)
 	}
@@ -21,7 +31,12 @@ class EventDefinition {
 	public static class Builder {
 		private String event
 		private Closure select
+		private Map<String,Object> attributes
 		
+		public Builder selectOnAttributes(Map<String,Object> attributes) {
+			this.attributes = attributes
+			return this
+		}
 		public Builder withSelect(Closure select) {
 			this.select = select
 			return this;
@@ -35,7 +50,10 @@ class EventDefinition {
 		public EventDefinition build() {
 			EventDefinition eventDefinition = new EventDefinition()
 			eventDefinition.name = this.event
-			eventDefinition.select = this.select
+			eventDefinition.attributes = this.attributes
+			if(this.select != null) {
+				eventDefinition.select = this.select
+			}
 			return eventDefinition
 		}
 	}

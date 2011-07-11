@@ -7,7 +7,9 @@ class RequestDispatcher {
 	private List<Request> requests;
 
 	public void onEvent(Event event) {
-		requests.each { it.onEvent(event)}
+		if(event.names) {
+			requests.each { it.onEvent(event)}
+		}
 	}
 
 	public void get() {

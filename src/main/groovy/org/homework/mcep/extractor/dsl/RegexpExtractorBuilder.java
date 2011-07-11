@@ -5,6 +5,7 @@ import java.util.Map;
 import org.homework.mcep.dsl.builder.Builder;
 import org.homework.mcep.dsl.builder.GroovySupportingBuilder;
 import org.homework.mcep.extractor.DependOnToken;
+import org.homework.mcep.extractor.PostProcess;
 import org.homework.mcep.extractor.regexp.RegExpExtractor;
 
 public class RegexpExtractorBuilder implements
@@ -45,6 +46,8 @@ public class RegexpExtractorBuilder implements
 		Object object = builder.build();
 		if (object instanceof DependOnToken) {
 			internalBuilder.dependOnToken((DependOnToken) object);
+		} else if (object instanceof PostProcess) {
+			internalBuilder.addPostProcess((PostProcess) object);
 		} else {
 			throw new IllegalArgumentException("Unexpected object " + object
 					+ " !");

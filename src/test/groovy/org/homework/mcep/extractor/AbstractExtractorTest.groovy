@@ -8,7 +8,7 @@ class AbstractExtractorTest extends Specification {
 		public List<DependOnToken> getDepends() {
 			return dependOnTokens;
 		}
-		public Map<String,String> extract(String line) {
+		public Map<String,Object> applyExtraction(String line) {
 			return null;
 		}
 		public String getEventName() {
