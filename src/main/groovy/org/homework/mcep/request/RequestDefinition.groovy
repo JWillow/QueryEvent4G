@@ -4,19 +4,15 @@ import groovy.lang.Closure;
 
 import java.text.SimpleDateFormat
 
+import org.homework.mcep.request.evaluator.SimpleEventEvaluator;
+
 class RequestDefinition {
 
 	List<EventListener> eventListeners;
 	
 	String description
 
-	/**
-	 * Closure permettant de définir comment la date est obtenue, par défaut on retourne la date système sous la forme de millisecond.
-	 * En paramètre on retrouve un "event"
-	 */
-	def date = {System.currentTimeMillis()}
-
-	List<EventDefinition> eventDefinitions
+	List<Evaluator> evaluators
 
 	List<Function> functions
 	
@@ -46,7 +42,7 @@ class RequestDefinition {
 		private Closure date = null;
 		private List<EventListener> eventListeners = []
 		private List<Function> functions = [];
-		private List<EventDefinition> eventDefinitions = [];
+		private List<Evaluator> evaluators = [];
 		private String description
 
 		public Builder withDescription(String description) {
@@ -73,8 +69,9 @@ class RequestDefinition {
 			functions << function
 			return this
 		}
-		public Builder addEventDefinition(EventDefinition eventDefinition) {
-			eventDefinitions << eventDefinition;
+		
+		public Builder addEvaluator(Evaluator evaluator) {
+			evaluators << evaluator;
 			return this;
 		}
 
@@ -82,10 +79,12 @@ class RequestDefinition {
 			this.date = date;
 			return this;
 		}
+		
 		public Builder withAccept(Closure accept) {
 			this.accept = accept
 			return this;
 		}
+		
 		public RequestDefinition build() {
 			RequestDefinition request = new RequestDefinition();
 			if(groupBy != null) {
@@ -96,7 +95,7 @@ class RequestDefinition {
 			}
 			request.eventListeners = this.eventListeners
 			request.description = this.description
-			request.eventDefinitions = eventDefinitions;
+			request.evaluators = evaluators;
 			request.functions = this.functions
 			return request;
 		}

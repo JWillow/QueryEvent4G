@@ -4,19 +4,30 @@ import groovy.util.BuilderSupport;
 
 import java.util.Map;
 
+/**
+ * Abstract class to extend by to plug Java builders to Groovy builder mechanism
+ * 
+ * @author Willow
+ * 
+ * @param <T>
+ */
 public abstract class GroovyBuilder<T> extends BuilderSupport implements
 		Builder<T> {
 
+	/**
+	 * Java builder to plug to keyword in Groovy builder mechanism
+	 */
 	protected Map<String, GroovySupportingBuilder<?>> builders;
 
+	
 	private GroovySupportingBuilder<?> rootBuilder;
 
 	public GroovyBuilder() {
 		init();
 	}
-	
+
 	/**
-	 * Permet l'enregistrement des builder de type
+	 * Must be provided to register builder
 	 * {@link GroovySupportingBuilder} au sein de la map <code>builders</code>
 	 */
 	public abstract void init();
@@ -30,7 +41,6 @@ public abstract class GroovyBuilder<T> extends BuilderSupport implements
 	}
 
 	protected void setParent(Object parent, Object child) {
-		System.out.println(parent);
 	}
 
 	protected Object createNode(Object name) {
@@ -68,5 +78,4 @@ public abstract class GroovyBuilder<T> extends BuilderSupport implements
 		GroovySupportingBuilder pBuilder = (GroovySupportingBuilder) parent;
 		pBuilder.withBuilder((Builder) child);
 	}
-
 }

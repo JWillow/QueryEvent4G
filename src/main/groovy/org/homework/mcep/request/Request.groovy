@@ -52,15 +52,15 @@ class Request {
 	 * @param requestEventDefinitions
 	 * @return
 	 */
-	protected Window createWindow(def id, def eventDefinitions) {
-		return new Window(id:id, eventDefinitions:eventDefinitions)
+	protected Window createWindow(def id, def evaluators) {
+		return new Window(id:id, evaluators:evaluators)
 	}
 
 	protected Window findWindow(def request, Event event) {
 		def groupById = request.groupBy(event)
 		Window window = windows[groupById]
 		if(!window) {
-			window = createWindow(groupById, request.eventDefinitions)
+			window = createWindow(groupById, request.evaluators)
 			windows[groupById] = window
 		}
 		return window

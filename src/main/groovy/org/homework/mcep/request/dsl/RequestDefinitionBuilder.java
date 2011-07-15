@@ -7,13 +7,13 @@ import java.util.Map;
 
 import org.homework.mcep.dsl.builder.Builder;
 import org.homework.mcep.dsl.builder.GroovySupportingBuilder;
-import org.homework.mcep.request.EventDefinition;
+import org.homework.mcep.request.Evaluator;
 import org.homework.mcep.request.EventListener;
 import org.homework.mcep.request.Function;
 import org.homework.mcep.request.Functions;
-import org.homework.mcep.request.RequestDefinition;
 import org.homework.mcep.request.Request;
-import org.homework.mcep.request.eventlistener.ScheduledNotification;
+import org.homework.mcep.request.RequestDefinition;
+import org.homework.mcep.request.evaluator.SimpleEventEvaluator;
 
 public class RequestDefinitionBuilder implements
 		GroovySupportingBuilder<Request> {
@@ -51,8 +51,8 @@ public class RequestDefinitionBuilder implements
 
 	public GroovySupportingBuilder<Request> withBuilder(Builder builder) {
 		Object object = builder.build();
-		if (object instanceof EventDefinition) {
-			internalBuilder.addEventDefinition((EventDefinition) object);
+		if (object instanceof Evaluator) {
+			internalBuilder.addEvaluator((Evaluator) object);
 		}
 		if (object instanceof Function) {
 			internalBuilder.addFunction((Function) object);
@@ -66,7 +66,7 @@ public class RequestDefinitionBuilder implements
 		if (builder instanceof SimpleListBuilder) {
 			SimpleListBuilder slb = (SimpleListBuilder) builder;
 			if (slb.getType().equals("pattern")) {
-				setEventDefinition((List<Object>) object);
+				setEvaluators((List<Object>) object);
 			} else if (slb.getType().equals("functions")) {
 				setFunctions((List<Function>) object);
 			}
@@ -80,9 +80,9 @@ public class RequestDefinitionBuilder implements
 		}
 	}
 
-	private void setEventDefinition(List<Object> list) {
+	private void setEvaluators(List<Object> list) {
 		for (Object object : list) {
-			internalBuilder.addEventDefinition((EventDefinition) object);
+			internalBuilder.addEvaluator((Evaluator) object);
 		}
 	}
 

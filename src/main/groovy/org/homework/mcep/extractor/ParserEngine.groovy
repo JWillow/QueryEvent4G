@@ -3,15 +3,16 @@ package org.homework.mcep.extractor
 import org.homework.mcep.Event;
 
 /**
+ * Core of the parser mechanism. Apply all {@link Extractor} registred to {@link String} data source to create an {@link Event}.
  * @author Willow
- *
+ * @specification ParserEngineSpecification
  */
 class ParserEngine {
 
 	List<Extractor> extractors = []
 
 	/**
-	 * Traitement d'une ligne afin d'en extraire une liste de propriétées
+	 * Extract <b>token</b> by using all {@link Extractor} registred. {@link Extractor} are applied with the respect of dependencies.
 	 * @param line
 	 * @return
 	 */

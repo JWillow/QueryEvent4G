@@ -2,12 +2,13 @@ package org.homework.mcep.request;
 
 import org.homework.mcep.Event
 import org.homework.mcep.request.Window.State;
+import org.homework.mcep.request.evaluator.SimpleEventEvaluator;
 
 import spock.lang.Specification;
 
 class WindowTest extends Specification {
 
-	def eventDefinition = Mock(EventDefinition)
+	def eventDefinition = Mock(SimpleEventEvaluator)
 	def event = new Event(attributes:[test:"value"],names:[])
 	def event2 = new Event(attributes:[test:"value2"],names:[])
 

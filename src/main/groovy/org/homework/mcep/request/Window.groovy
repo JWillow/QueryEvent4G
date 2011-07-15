@@ -19,7 +19,7 @@ class Window {
 	List<Event> proceedEvents = []
 
 	/** Définition des événements à matcher */
-	List<EventDefinition> eventDefinitions = []
+	List<Evaluator> evaluators = []
 
 	/**
 	 * Traitement d'un événement, si la fenêtre est dans un autre état que {@link State#OPEN} alors l'événement n'est pas traité, l'état de la fenêtre n'est pas changé
@@ -31,11 +31,11 @@ class Window {
 			return state
 		}
 		proceedEvents << event
-		if(!eventDefinitions[proceedEvents.size() - 1].evaluate(proceedEvents)) {
+		if(!evaluators[proceedEvents.size() - 1].evaluate(proceedEvents)) {
 			state = BROKEN
 			return state
 		}
-		if(proceedEvents.size() == eventDefinitions.size()) {
+		if(proceedEvents.size() == evaluators.size()) {
 			state = CLOSED
 		} else {
 			state = OPEN

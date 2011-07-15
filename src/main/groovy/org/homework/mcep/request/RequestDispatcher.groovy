@@ -7,7 +7,7 @@ class RequestDispatcher {
 	private List<Request> requests;
 
 	public void onEvent(Event event) {
-		if(event.names) {
+		if(!event.isInconsistent()) {
 			requests.each { it.onEvent(event)}
 		}
 	}

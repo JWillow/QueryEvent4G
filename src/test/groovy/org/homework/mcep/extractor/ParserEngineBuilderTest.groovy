@@ -1,5 +1,7 @@
 package org.homework.mcep.extractor
 
+import org.homework.mcep.extractor.dsl.GParserEngineBuilder;
+
 import spock.lang.Specification;
 
 class ParserEngineBuilderTest extends Specification {

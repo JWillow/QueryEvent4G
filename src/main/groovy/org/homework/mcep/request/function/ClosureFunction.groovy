@@ -26,7 +26,6 @@ class ClosureFunction implements Function {
 		context.put KEYWORD, null
 	}
 
-
 	// ------------
 	// BUILDER PART
 	// ------------
@@ -37,8 +36,7 @@ class ClosureFunction implements Function {
 	}
 	public static class Builder {
 		private Closure core;
-		private Closure notification= {println it};
-
+		private Closure notification= {println "Notification $it"};
 
 		public Builder withNotification(Closure notification) {
 			this.notification = notification
