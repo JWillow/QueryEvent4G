@@ -4,9 +4,19 @@ import java.util.Map;
 
 import org.homework.mcep.dsl.builder.Builder;
 import org.homework.mcep.dsl.builder.GroovySupportingBuilder;
+import org.homework.mcep.extractor.DependOnToken;
 import org.homework.mcep.extractor.Extractor;
 import org.homework.mcep.extractor.ParserEngine;
 
+/**
+ * Support below syntax to create a new instance of {@link ParserEngine}.
+ * <pre>
+ * ParserEngine parserEngine = gParserEngineBuilder.engine {
+ * }
+ * </pre>
+ * 
+ * @author Willow
+ */
 public class ParserEngineBuilder implements
 		GroovySupportingBuilder<ParserEngine> {
 

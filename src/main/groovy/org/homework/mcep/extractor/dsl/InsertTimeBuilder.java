@@ -6,6 +6,14 @@ import org.homework.mcep.dsl.builder.Builder;
 import org.homework.mcep.dsl.builder.GroovySupportingBuilder;
 import org.homework.mcep.extractor.postprocess.InsertTime;
 
+/**  
+ * Support below syntax to create a new instance of {@link InserTime}.
+ * <pre>
+ * insertTime(onToken:"date",format:"dd/MM/yy HH:mm:ss:SSS")
+ * </pre>
+ * 
+ * @author Willow
+ */
 public class InsertTimeBuilder implements
 		GroovySupportingBuilder<InsertTime> {
 
@@ -30,7 +38,7 @@ public class InsertTimeBuilder implements
 				internalBuilder.onToken((String) entry.getValue());
 			} else {
 				throw new IllegalArgumentException(String.format(
-						"Field [%s] unknown for EventDefinitionBuilder !",
+						"Field [%s] unknown for " + this + " !",
 						attribut));
 			}
 		}

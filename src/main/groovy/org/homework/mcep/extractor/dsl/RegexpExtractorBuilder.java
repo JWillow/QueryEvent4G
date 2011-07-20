@@ -8,6 +8,16 @@ import org.homework.mcep.extractor.DependOnToken;
 import org.homework.mcep.extractor.PostProcess;
 import org.homework.mcep.extractor.regexp.RegExpExtractor;
 
+/**
+ * Support below syntax to create a new instance of {@link RegExpExtractor}.
+ * 
+ * <pre>
+ * regExpExtractor(event:'RessourceEvent',exp:"(ACDAddr\\w+).*?agentId=(\\d+).*?ACD : (\\d+)",tokens:"state,acdId,skill") {
+ * }
+ * </pre>
+ * 
+ * @author Willow
+ */
 public class RegexpExtractorBuilder implements
 		GroovySupportingBuilder<RegExpExtractor> {
 

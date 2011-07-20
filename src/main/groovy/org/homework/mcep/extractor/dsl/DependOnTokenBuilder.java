@@ -6,6 +6,14 @@ import org.homework.mcep.dsl.builder.Builder;
 import org.homework.mcep.dsl.builder.GroovySupportingBuilder;
 import org.homework.mcep.extractor.DependOnToken;
 
+/**
+ * Support below syntax to create a new instance of {@link DependOnToken}.
+ * <pre>
+ * dependOnToken(id:'categorie',value:'Alert')
+ * </pre>
+ * 
+ * @author Willow
+ */
 public class DependOnTokenBuilder implements
 		GroovySupportingBuilder<DependOnToken> {
 

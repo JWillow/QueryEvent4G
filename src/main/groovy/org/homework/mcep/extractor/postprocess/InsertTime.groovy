@@ -3,16 +3,26 @@ package org.homework.mcep.extractor.postprocess
 import java.text.SimpleDateFormat;
 import java.util.Map;
 
+import org.homework.mcep.extractor.Extractor;
 import org.homework.mcep.extractor.PostProcess;
+import org.homework.mcep.request.Request;
 
 /**
- * Permet d'insérer dans la liste des tokens un attribut 'time' au format long qui correspond à la date de l'événement
+ * <p>PostProcess used to include a <b>new token</b> to the extraction process by {@link Extractor}. The new token is : <i>time</i>, it is the result of the convertion of a String token (representing a date) to long.
+ * <p>When we process a log based Event, this {@link PostProcess} is usefull to use time base {@link Request}. 
+ * 
  * @author Willow
- *
  */
 class InsertTime implements PostProcess {
 
+	/**
+	 * Token id of the token value to convert
+	 */
 	String tokenToConvert
+
+	/**
+	 * To process the convertion between {@link String} to {@link Long}
+	 */
 	SimpleDateFormat sdf
 
 	public Map<String, Object> process(Map<String, Object> tokens) {

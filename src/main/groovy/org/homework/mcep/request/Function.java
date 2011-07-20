@@ -5,10 +5,10 @@ import java.util.List;
 import org.homework.mcep.Event;
 
 /**
- * Fonction déclenchée lors de la détection d'un pattern
+ * <p>
+ * Represent a chunk of code that will be executed when the pattern is detected.
  * 
  * @author Willow
- * 
  */
 public interface Function {
 
@@ -20,16 +20,16 @@ public interface Function {
 	 *            Liste des événements correspondant au pattern lors de la
 	 *            détection
 	 */
-	void onPatternDetection(RequestDefinition requestDefinition,
-			List<Event> events);
+	void onPatternDetection(Request request, List<Event> events);
 
 	/**
-	 * Demande à la fonction de produire son résultat explicitement
+	 * Explicit demand to {@link Function} to produce a result
 	 */
 	void get();
 
 	/**
-	 * Réinitialise la fonction
+	 * Demand to {@link Function} to reset all context elements that can be used
+	 * to produce a result
 	 */
 	void reset();
 }

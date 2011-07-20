@@ -1,14 +1,14 @@
 package org.homework.mcep.request.eventlistener
 
-import java.text.SimpleDateFormat;
-import java.util.List;
+import java.util.List
 
 import org.homework.mcep.Event
-import org.homework.mcep.request.EventListener;
-import org.homework.mcep.request.Function;
-import org.homework.mcep.request.Functions;
-import org.homework.mcep.request.RequestDefinition;
-import org.homework.mcep.request.Window;
+import org.homework.mcep.request.EventListener
+import org.homework.mcep.request.Function
+import org.homework.mcep.request.Functions
+import org.homework.mcep.request.Pattern.Evaluation;
+import org.homework.mcep.request.Request
+import org.homework.mcep.request.Window
 
 class ScheduledNotification implements EventListener, Functions {
 
@@ -24,7 +24,7 @@ class ScheduledNotification implements EventListener, Functions {
 		currentTime = ((long) date / 1000) * 1000
 	}
 
-	public void beforeEventProcessing(RequestDefinition requestDefinition, Collection<Window> windows, Event event) {
+	public void beforeEventProcessing(Request request, Event event) {
 		long dateInMillis = event.attributes.time
 		initCurrentTimeIfNecessary(dateInMillis)
 		if(currentTime + interval < dateInMillis) {
@@ -42,9 +42,13 @@ class ScheduledNotification implements EventListener, Functions {
 		return functionsToNotified;
 	}
 
-	public void afterEventProcessed(RequestDefinition requestDefinition, Collection<Window> windows, Event event) {
+	/**
+	 * Do nothing
+	 * @see org.homework.mcep.request.EventListener#afterEventProcessed(org.homework.mcep.request.Request, org.homework.mcep.request.Pattern.Evaluation)
+	 */
+	public void afterEventProcessed(Request request, Evaluation evaluation) {
+		// DO NOTHING
 	}
-
 
 	// ------------
 	// BUILDER PART

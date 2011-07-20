@@ -1,22 +1,34 @@
 package org.homework.mcep.request;
 
-import java.util.Collection;
-
 import org.homework.mcep.Event;
+import org.homework.mcep.request.Pattern.Evaluation;
 
 /**
  * <p>
- * Listener déclenché à chaque événement traité que cela donne lieu à la
- * détection d'un pattern ou non.
+ * Triggerred for each {@link Event} received by the {@link Request}
  * 
  * @author Willow
- * 
  */
 public interface EventListener {
-	
-	void beforeEventProcessing(RequestDefinition requestDefinition, Collection<Window> windows,
-			Event event);
-	
-	void afterEventProcessed(RequestDefinition requestDefinition, Collection<Window> windows,
-			Event event);
+
+	/**
+	 * Call before the {@link Request#accept} method on each {@link Event}
+	 * before any treatment
+	 * 
+	 * @param request
+	 *            - Request that will handle the event
+	 * @param event
+	 *            - Event to proceed
+	 */
+	void beforeEventProcessing(Request request, Event event);
+
+	/**
+	 * Called after all the treatments were performed.
+	 * 
+	 * @param request
+	 *            - Request that handle the {@link Event}
+	 *            - {@link Window} that handle the {@link Event}
+	 * @param evaluation
+	 */
+	void afterEventProcessed(Request request, Evaluation evaluation);
 }

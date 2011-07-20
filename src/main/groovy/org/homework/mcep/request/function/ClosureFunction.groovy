@@ -4,7 +4,7 @@ import java.util.List
 
 import org.homework.mcep.Event
 import org.homework.mcep.request.Function
-import org.homework.mcep.request.RequestDefinition
+import org.homework.mcep.request.Request
 
 class ClosureFunction implements Function {
 	private final static String KEYWORD = "get"
@@ -13,7 +13,7 @@ class ClosureFunction implements Function {
 	Closure core;
 	Map<Object,Object> context = [KEYWORD :null];
 
-	void onPatternDetection(RequestDefinition requestDefinition, List<Event> events) {
+	void onPatternDetection(Request request, List<Event> events) {
 		core(context,events)
 	}
 
@@ -34,6 +34,7 @@ class ClosureFunction implements Function {
 	public static Builder builder() {
 		return new Builder();
 	}
+	
 	public static class Builder {
 		private Closure core;
 		private Closure notification= {println "Notification $it"};

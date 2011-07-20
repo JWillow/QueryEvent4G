@@ -16,7 +16,7 @@ class Window {
 	def state = OPEN
 
 	/** Evénements matchant les requestEventDefinitions */
-	List<Event> proceedEvents = []
+	List<Event> events = []
 
 	/** Définition des événements à matcher */
 	List<Evaluator> evaluators = []
@@ -30,12 +30,12 @@ class Window {
 		if(state != OPEN) {
 			return state
 		}
-		proceedEvents << event
-		if(!evaluators[proceedEvents.size() - 1].evaluate(proceedEvents)) {
+		events << event
+		if(!evaluators[events.size() - 1].evaluate(events)) {
 			state = BROKEN
 			return state
 		}
-		if(proceedEvents.size() == evaluators.size()) {
+		if(events.size() == evaluators.size()) {
 			state = CLOSED
 		} else {
 			state = OPEN

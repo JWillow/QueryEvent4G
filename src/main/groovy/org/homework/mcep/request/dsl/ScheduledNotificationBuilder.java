@@ -29,6 +29,9 @@ public class ScheduledNotificationBuilder implements
 			String attribut = entry.getKey();
 			if (attribut.equals("interval")) {
 				internalBuilder.withInterval((Integer) entry.getValue());
+			} else if (attribut.startsWith("interval")) {
+				internalBuilder.withInterval(getInterval(attribut,
+						(Integer) entry.getValue()));
 			} else if (attribut.equals("reset")) {
 				internalBuilder.reset((Boolean) entry.getValue());
 			} else {
@@ -36,6 +39,20 @@ public class ScheduledNotificationBuilder implements
 			}
 		}
 		return this;
+	}
+
+	private int getInterval(String attribut, Integer value) {
+		if (attribut.equals("intervalInSecond")) {
+			return value * 1000;
+		} else if (attribut.equals("intervalInHour")) {
+			return value * 60 * 1000;
+		} else if (attribut.equals("intervalInMillis")) {
+			return value;
+		}
+		throw new IllegalArgumentException(
+				"attribut "
+						+ attribut
+						+ " not expected ! Supported (intervalInMillis,intervalInSecond,intervalInHour)");
 	}
 
 	public GroovySupportingBuilder withBuilder(Builder builder) {

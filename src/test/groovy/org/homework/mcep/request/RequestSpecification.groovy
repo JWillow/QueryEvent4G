@@ -1,44 +1,54 @@
 package org.homework.mcep.request
 
-import org.homework.mcep.Event;
-import org.homework.mcep.request.RequestDefinition;
-import org.homework.mcep.request.Request;
-import org.homework.mcep.request.Window;
-import org.homework.mcep.request.Window.State;
+import static org.homework.mcep.request.Window.State.*
 
-import static org.homework.mcep.request.Window.State.*;
+import org.homework.mcep.Event
+import org.homework.mcep.request.Window.State
 
-import spock.lang.Specification;
+import spock.lang.Specification
 
-class RequestTest extends Specification {
+class RequestSpecification extends Specification {
 
 	def groupId = 'myId'
-	def event = new Event(attributes:[test:"value"])
+	def event = new Event(names:["MainEvent"],attributes:[test:"value"])
 	Window window = Mock(Window)
 	EventListener eventListener = Mock(EventListener)
 	Function function = Mock(Function)
-	RequestDefinition requestDefinition = new RequestDefinition(eventListeners:[eventListener],groupBy:{groupId},accept:{true},functions:[function])
-	Request request = new Request(requestDefinition:requestDefinition)
+	Request request = new Request(eventListeners:[eventListener],groupBy:{groupId},accept:{true},functions:[function])
 
 	def registerWindowInEngine() {
 		window.id >> groupId
 		request.windows[groupId] = window
 	}
 
-	def "Création d'une fenêtre sur la réception d'un événement, pas d'appel aux Function"(){
+	def "When an Event is performed and, no Window are registred or no Window are linked with the grouping id extract from Event, then a new Window is created and used."(){
 		setup:
 		request.metaClass.createWindow = {a,b -> window}
 
 		when: request.onEvent(event)
 
-		then: "La fenêtre nouvellement créée est appelée pour traiter l'événement, la fenêtre reste OPEN"
+		then: "The new Window performed the Event and it state is OPEN"
 		1 * window.processEvent(event) >> State.OPEN
-		and: "La fenêtre est enregistrée auprès du moteur"
+	}
+
+	def "When after an Event performed if the Window is in OPEN state then this Window is registred inside the Request"() {
+		
+	}
+	
+	def "When an Event is performed then a new Window is created. If the state's Window is OPEN then the Window is registred inside the Request"(){
+		setup:
+		request.metaClass.createWindow = {a,b -> window}
+
+		when: request.onEvent(event)
+
+		then: "The new Window performed the Event and it state is OPEN"
+		1 * window.processEvent(event) >> State.OPEN
+		and: "The Window has been registred inside the Request"
 		request.windows.size() == 1
 		and: "La fenêtre n'étant pas dans l'état CLOSED, la fonction test n'a pas été appelée"
 		0 * function.onPatternDetection(_,_)
 	}
-
+	
 	def "Un nouvel événement est reçu qui vient compléter une fenêtre déjà existante. La fenêtre reste dans l'état OPEN."() {
 		setup: registerWindowInEngine()
 
