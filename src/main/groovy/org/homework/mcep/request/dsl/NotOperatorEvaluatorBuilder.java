@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.homework.mcep.dsl.builder.Builder;
 import org.homework.mcep.dsl.builder.GroovySupportingBuilder;
+import org.homework.mcep.request.Counter;
 import org.homework.mcep.request.Evaluator;
 import org.homework.mcep.request.evaluator.NotOperatorEvaluator;
 

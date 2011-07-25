@@ -4,6 +4,8 @@ import groovy.util.BuilderSupport;
 
 import java.util.Map;
 
+import org.homework.mcep.request.Counter;
+
 /**
  * Abstract class to extend by to plug Java builders to Groovy builder mechanism
  * 
@@ -19,7 +21,6 @@ public abstract class GroovyBuilder<T> extends BuilderSupport implements
 	 */
 	protected Map<String, GroovySupportingBuilder<?>> builders;
 
-	
 	private GroovySupportingBuilder<?> rootBuilder;
 
 	public GroovyBuilder() {
@@ -27,8 +28,8 @@ public abstract class GroovyBuilder<T> extends BuilderSupport implements
 	}
 
 	/**
-	 * Must be provided to register builder
-	 * {@link GroovySupportingBuilder} au sein de la map <code>builders</code>
+	 * Must be provided to register builder {@link GroovySupportingBuilder} au
+	 * sein de la map <code>builders</code>
 	 */
 	public abstract void init();
 
@@ -44,22 +45,27 @@ public abstract class GroovyBuilder<T> extends BuilderSupport implements
 	}
 
 	protected Object createNode(Object name) {
+		Counter.start();
 		return getBuilder(name);
 	}
 
 	protected Object createNode(Object name, Object value) {
+		Counter.start();
 		return getBuilder(name).withData(value);
 	}
 
 	protected Object createNode(Object name, Map attributes) {
+		Counter.start();
 		return getBuilder(name).withAttributes(attributes);
 	}
 
 	protected Object createNode(Object name, Map attributes, Object value) {
+		Counter.start();
 		return getBuilder(name).withAttributes(attributes).withData(value);
 	}
 
 	public T build() {
+		Counter.reset();
 		return (T) rootBuilder.build();
 	}
 
@@ -77,5 +83,6 @@ public abstract class GroovyBuilder<T> extends BuilderSupport implements
 		}
 		GroovySupportingBuilder pBuilder = (GroovySupportingBuilder) parent;
 		pBuilder.withBuilder((Builder) child);
+		Counter.stop();
 	}
 }

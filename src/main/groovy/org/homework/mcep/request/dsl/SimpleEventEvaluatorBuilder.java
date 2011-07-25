@@ -1,11 +1,13 @@
 package org.homework.mcep.request.dsl;
 
 import groovy.lang.Closure;
+import groovy.lang.Range;
 
 import java.util.Map;
 
 import org.homework.mcep.dsl.builder.Builder;
 import org.homework.mcep.dsl.builder.GroovySupportingBuilder;
+import org.homework.mcep.request.Counter;
 import org.homework.mcep.request.evaluator.SimpleEventEvaluator;
 
 public class SimpleEventEvaluatorBuilder implements
@@ -25,22 +27,23 @@ public class SimpleEventEvaluatorBuilder implements
 	}
 
 	private int getIndex(String attribut) {
-		if(attribut.endsWith("First")) {
+		if (attribut.endsWith("First")) {
 			return 0;
 		}
-		if(attribut.endsWith("Second")) {
+		if (attribut.endsWith("Second")) {
 			return 1;
 		}
-		if(attribut.endsWith("Third")) {
+		if (attribut.endsWith("Third")) {
 			return 2;
-		}		
-		if(attribut.endsWith("Fourth")) {
+		}
+		if (attribut.endsWith("Fourth")) {
 			return 3;
-		}		
+		}
 		return -1;
 	}
 
 	public GroovySupportingBuilder withAttributes(Map<String, Object> attributes) {
+		internalBuilder.affectId(Counter.getId());
 		for (Map.Entry<String, Object> entry : attributes.entrySet()) {
 			String attribut = entry.getKey();
 			if (attribut.equals("select")) {
@@ -49,6 +52,8 @@ public class SimpleEventEvaluatorBuilder implements
 				internalBuilder.withEventName((String) entry.getValue());
 			} else if (attribut.equals("attributes")) {
 				internalBuilder.selectOnAttributes((Map) entry.getValue());
+			} else if (attribut.startsWith("occurs")) {
+				internalBuilder.occurs((Range<Comparable>) entry.getValue());
 			} else if (attribut.startsWith("maxInterval")) {
 				internalBuilder.withMaxIntervalCriteria(
 						(Integer) entry.getValue(), getIndex(attribut));

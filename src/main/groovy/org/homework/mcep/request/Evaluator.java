@@ -1,6 +1,7 @@
 package org.homework.mcep.request;
 
 import java.util.List;
+import java.util.Map;
 
 import org.homework.mcep.Event;
 
@@ -14,9 +15,11 @@ import org.homework.mcep.Event;
  */
 public interface Evaluator {
 	
+	public enum Response{OK,KO,CONTINUE_WITH_NEXT_EVALUATOR,OK_BUT_KEEP_ME}
+	
 	/**
 	 * @param events - order by arriving order inside the {@link Request}
 	 * @return
 	 */
-	boolean evaluate(List<Event> events);
+	Response evaluate(Map<String,Object> context, List<Event> events);
 }

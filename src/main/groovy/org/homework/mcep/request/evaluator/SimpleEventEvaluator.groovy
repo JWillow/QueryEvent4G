@@ -2,26 +2,63 @@ package org.homework.mcep.request.evaluator
 
 import org.homework.mcep.Event;
 import org.homework.mcep.request.Evaluator;
+import org.homework.mcep.request.Evaluator.Response;
 
 class SimpleEventEvaluator implements Evaluator {
 	def name
-	def attributes
-	List<Closure> criterion
+	Map<String,Object> attributes = [:]
+	String id;
+	List<Closure> criterions
+	Range<Integer> occurs;
 
-	boolean evaluate(List<Event> events) {
-		Event event = events.get(events.size() - 1)
+	private boolean evaluateOnNameAndAttributesAndCriterion(Map<String,Object> context, List<Event> events) {
+		Event event = events[events.size() -1]
 		if(!event.names.contains(name)) {
 			return false
 		}
 		if(attributes.size() != 0) {
-			boolean result = attributes.every {key, value ->
+			boolean result = attributes.every { key, value ->
 				value == event.attributes[key]
 			}
 			if(!result) {
 				return false;
 			}
 		}
-		return criterion.every() { it(events); }
+		return criterions.every {it(events)}
+	}
+	public Response evaluate(Map<String,Object> context, List<Event> events) {
+		boolean result = evaluateOnNameAndAttributesAndCriterion(context, events)
+
+		if(!result) {
+			if(occurs.contains(getCounter(context))) {
+				return Response.CONTINUE_WITH_NEXT_EVALUATOR
+			} else {
+				return Response.KO
+			}
+		}
+
+		int checkCounter = getCounterAndIncrement(context)
+		if (checkCounter > occurs[occurs.size() - 1] ) {
+			return Response.KO;
+		} else if (checkCounter == occurs[occurs.size() - 1]) {
+			return Response.OK
+		} else {
+			return Response.OK_BUT_KEEP_ME
+		}
+	}
+
+	private int getCounter(Map<String,Object> context) {
+		def counter = context[id]
+		if(counter == null) {
+			counter = 0
+		}
+		return counter
+	}
+
+	private int getCounterAndIncrement(Map<String,Object> context) {
+		int counter = getCounter(context)
+		context[id] = ++counter
+		return counter
 	}
 
 	// ------------
@@ -33,7 +70,9 @@ class SimpleEventEvaluator implements Evaluator {
 	public static class Builder {
 		private String event
 		private List<Closure> criterion = []
-		private Map<String,Object> attributes
+		private Map<String,Object> attributes = [:]
+		private String id = null;
+		private Range range = null;
 
 		private def interval = {int timeInterval, int index, boolean min, List<Event> events ->
 			Event lastEvent = events[events.size() - 1]
@@ -46,6 +85,14 @@ class SimpleEventEvaluator implements Evaluator {
 			}
 		}
 
+		public Builder occurs(Range occurs) {
+			this.range = occurs
+			return this
+		}
+		public Builder affectId(String id) {
+			this.id = id;
+			return this;
+		}
 		public Builder selectOnAttributes(Map<String,Object> attributes) {
 			this.attributes = attributes
 			return this
@@ -72,9 +119,15 @@ class SimpleEventEvaluator implements Evaluator {
 
 		public SimpleEventEvaluator build() {
 			SimpleEventEvaluator evaluator = new SimpleEventEvaluator()
+			evaluator.id = this.id
 			evaluator.name = this.event
 			evaluator.attributes = this.attributes
-			evaluator.criterion = this.criterion
+			evaluator.criterions = this.criterion
+			if(this.range == null) {
+				evaluator.occurs = new IntRange(1,1)
+			} else {
+				evaluator.occurs = this.range
+			}
 			return evaluator
 		}
 	}

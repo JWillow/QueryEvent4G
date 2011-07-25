@@ -3,6 +3,7 @@ package org.homework.mcep.request
 import static org.homework.mcep.request.Window.State.*
 
 import org.homework.mcep.Event;
+import org.homework.mcep.request.Evaluator.Response;
 
 class Window {
 
@@ -21,6 +22,10 @@ class Window {
 	/** Définition des événements à matcher */
 	List<Evaluator> evaluators = []
 
+	int indexNextEvaluatorToUse = 0;
+
+	Map<String,Object> contextForEvaluator = [:]
+
 	/**
 	 * Traitement d'un événement, si la fenêtre est dans un autre état que {@link State#OPEN} alors l'événement n'est pas traité, l'état de la fenêtre n'est pas changé
 	 * @param event
@@ -31,15 +36,45 @@ class Window {
 			return state
 		}
 		events << event
-		if(!evaluators[events.size() - 1].evaluate(events)) {
-			state = BROKEN
-			return state
-		}
-		if(events.size() == evaluators.size()) {
-			state = CLOSED
-		} else {
-			state = OPEN
+		switch(applyEvaluator(event,indexNextEvaluatorToUse)) {
+			case Response.CONTINUE_WITH_NEXT_EVALUATOR:
+			case Response.OK :
+				if(indexNextEvaluatorToUse == evaluators.size()) {
+					state = CLOSED
+					break
+				}
+			case Response.OK_BUT_KEEP_ME:
+				state = OPEN
+				break
+			case Response.KO :
+				state = BROKEN
+				break
+			default:
+				throw new IllegalStateException(response + " not supported !")
 		}
 		return state
+	}
+
+	private Response applyEvaluator(Event event, int indexEvaluatorToUse) {
+		if(indexEvaluatorToUse == evaluators.size()) {
+			indexNextEvaluatorToUse = indexEvaluatorToUse
+			return Response.OK
+		}
+		Response response = evaluators[indexEvaluatorToUse].evaluate(contextForEvaluator, events)
+		switch(response) {
+			case Response.CONTINUE_WITH_NEXT_EVALUATOR:
+				return applyEvaluator(event, indexEvaluatorToUse + 1)
+				break;
+
+			case Response.OK_BUT_KEEP_ME:
+				indexNextEvaluatorToUse = indexEvaluatorToUse
+				break;
+
+			case Response.OK :
+				indexNextEvaluatorToUse = indexEvaluatorToUse + 1
+			case Response.KO :
+				break;
+		}				
+		return response;
 	}
 }

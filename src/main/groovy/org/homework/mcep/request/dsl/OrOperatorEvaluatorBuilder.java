@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.homework.mcep.dsl.builder.Builder;
 import org.homework.mcep.dsl.builder.GroovySupportingBuilder;
+import org.homework.mcep.request.Counter;
 import org.homework.mcep.request.Evaluator;
 import org.homework.mcep.request.evaluator.OrOperatorEvaluator;
 
@@ -14,6 +15,7 @@ public class OrOperatorEvaluatorBuilder implements
 			.builder();
 
 	public OrOperatorEvaluator build() {
+		Counter.stop();
 		OrOperatorEvaluator ooe = internalBuilder.build();
 		internalBuilder = OrOperatorEvaluator.builder();
 		return ooe;
@@ -29,6 +31,7 @@ public class OrOperatorEvaluatorBuilder implements
 
 	public GroovySupportingBuilder withBuilder(Builder builder) {
 		Object object = builder.build();
+		internalBuilder.affectId(Counter.getId());
 		if (object instanceof Evaluator) {
 			internalBuilder.onEvaluator((Evaluator) object);
 		} else {
