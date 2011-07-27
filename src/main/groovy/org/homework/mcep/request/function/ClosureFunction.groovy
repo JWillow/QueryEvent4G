@@ -7,11 +7,9 @@ import org.homework.mcep.request.Function
 import org.homework.mcep.request.Request
 
 class ClosureFunction implements Function {
-	private final static String KEYWORD = "get"
-
 	Closure notification;
 	Closure core;
-	Map<Object,Object> context = [KEYWORD :null];
+	Map<Object,Object> context = [:];
 
 	void onPatternDetection(Request request, List<Event> events) {
 		core(context,events)
@@ -23,7 +21,6 @@ class ClosureFunction implements Function {
 
 	void reset() {
 		context.clear();
-		context.put KEYWORD, null
 	}
 
 	// ------------

@@ -18,6 +18,7 @@ public class GRequestEngineBuilder extends GroovyBuilder<Request> {
 		builders.put("pattern", new PatternBuilder());
 		builders.put("onPatternDetection", new SimpleListBuilder("functions"));
 		builders.put("function", new FunctionBuilder());
+		builders.put("count", new CountFunctionBuilder());
 		builders.put("scheduledNotification", new ScheduledNotificationBuilder());
 	}
 
