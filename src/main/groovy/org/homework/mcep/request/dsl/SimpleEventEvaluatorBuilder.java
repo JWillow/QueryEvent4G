@@ -2,7 +2,6 @@ package org.homework.mcep.request.dsl;
 
 import groovy.lang.Closure;
 import groovy.lang.IntRange;
-import groovy.lang.Range;
 
 import java.util.Map;
 
@@ -14,17 +13,20 @@ import org.homework.mcep.request.evaluator.SimpleEventEvaluator;
 /**
  * Different examples :
  * 
- * <pre>
- * event(name:'RessourceEvent',attributes:[state:'ACDAddrBusyEv',skill:'6192000'],occurs:0..3)
- * </pre>
- * 
- * <pre>
- * event(name:'RessourceEvent',select:{List<Event> events -> lastEvents(events).state = 'ACDAddrBusyEv'})
- * </pre>
- * 
- * <pre>
- * event(name:'RessourceEvent',minIntervalWithLastEventInSecond:10)
- * </pre>
+ * <p>
+ * We want between 0 and 3 events with name <code>B</code> and with attributes
+ * values equals to <code>Ready</code> for <code>state</code> and
+ * <code>finance</code> for <code>skill</code>.
+ * <br/><code>event(name:'B',attributes:[state:'Ready',skill:'finance'],occurs:0..3)</code>
+ * <p>
+ * Here we specify our personal closure to select the events with <code>B</code> name.
+ * <br/><code>event(name:'RessourceEvent',select:{List<Event> events -> lastEvents(events).state = 'ACDAddrBusyEv'})</code>
+ * <p>
+ * In this example we describe we want the event <code>B</code> with a mininum
+ * of 10 seconds on the last event processed. <br/>
+ * <code>event(name:'B',minIntervalWithLastEventInSecond:10)</code> <br/>
+ * Support
+ * <code>{min or max}IntervalWith{index(First,Second,Third or Fourth) event or last event}In{time unit (Millis,Second,Minute or Hour)</code>
  * 
  * @author Willow
  * 
