@@ -35,7 +35,7 @@ class PatternSpecification extends Specification {
 		when: Evaluation evaluation = pattern.evaluate(eventA)
 		then: "The new Window performed the Event and it state is OPEN"
 		1 * window.processEvent(eventA) >> org.homework.mcep.request.Window.State.OPEN
-		and: "The Window has been registred inside the Request"
+		and: "The Window is registred"
 		pattern.windows.size() == 1
 	}
 
@@ -45,9 +45,10 @@ class PatternSpecification extends Specification {
 		then: "The  Window performed the Event and it state is OPEN"
 		1 * window.processEvent(eventA) >> org.homework.mcep.request.Window.State.OPEN
 		1 * window.events >> [eventA]
-		and: "The Window has been registred inside the Request"
 		evaluation.state == State.INTEGRATED
 		evaluation.processedEvents.size() == 1
+		and: "window is always present"
+		pattern.windows.size() == 1
 	}
 
 	def "If Window processed an Event and return CLOSED then the Evaluation is DETECTED"() {
@@ -59,6 +60,8 @@ class PatternSpecification extends Specification {
 		and: "The Window has been registred inside the Request"
 		evaluation.state == State.DETECTED
 		evaluation.processedEvents.size() == 1
+		and: "The Window is removed"
+		pattern.windows.size() == 0
 	}
 
 	def "If Window processed an Event contains already one Event and return BROKEN, the Event has the rigth to a second evaluation because the current event can be the begin of a new Pattern detection. If the second evaluation is positive the evaluation state is REBUILD"() {
@@ -80,15 +83,18 @@ class PatternSpecification extends Specification {
 		evaluation.state == State.REBUILD
 		and:"The 2 events contains by the first window are given"
 		evaluation.processedEvents.size() ==  2
+		and: "we have only 1 window registred"
+		pattern.windows.size() == 1
+		pattern.windows.values().contains(otherWindow)
 	}
-	
+
 	def "If Window processed an Event contains already one Event and return BROKEN, the Event has the rigth to a second evaluation because the current event can be the begin of a new Pattern detection. If the second evaluation is negative the evaluation state is BROKEN"() {
 		setup:"We register the existing window"
 		registerWindowInEngine()
 		and:"We prepare the new Window creation"
 		Window otherWindow = Mock(Window)
 		pattern.metaClass.createWindow = {a,b -> otherWindow}
-
+		otherWindow.id >> "myId"
 		when: Evaluation evaluation = pattern.evaluate(eventA)
 
 		then: "The first Event evaluation by existing Window, broke the existing Window"
@@ -102,18 +108,22 @@ class PatternSpecification extends Specification {
 		evaluation.state == State.BROKEN
 		and:"The 2 events contains by the first window are given"
 		evaluation.processedEvents.size() == 2
+		and: "The Window is removed"
+		pattern.windows.size() == 0
 	}
-	
+
 	def "If Window processed an Event and contains no Event, the Event breaks the new Window, then the evaluation state is BROKEN"() {
 		setup:registerWindowInEngine()
 		when: Evaluation evaluation = pattern.evaluate(eventA)
-		then: 
+		then:
 		1 * window.processEvent(eventA) >> org.homework.mcep.request.Window.State.BROKEN
 		(1.._) * window.events >> [eventA]
 		evaluation.state == State.BROKEN
 		evaluation.processedEvents.size() == 1
+		and: "The Window is removed"
+		pattern.windows.size() == 0
 	}
-	
+
 	def "If pattern doesn't accept an Event then no Window are created and the evaluation state is REJECTED"() {
 		setup:
 		pattern.accept = {false}
@@ -121,5 +131,7 @@ class PatternSpecification extends Specification {
 		then:
 		evaluation.state == State.REJECTED
 		evaluation.processedEvents.size() == 1
+		and: "there are no Window"
+		pattern.windows.size() == 0
 	}
 }

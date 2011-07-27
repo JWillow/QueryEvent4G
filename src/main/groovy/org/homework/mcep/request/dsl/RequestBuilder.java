@@ -50,9 +50,9 @@ public class RequestBuilder implements GroovySupportingBuilder<Request> {
 		if(object instanceof Pattern) {
 			internalBuilder.workAroundPattern((Pattern) object);
 		}
-		if (object instanceof EventListener) {
-			internalBuilder.addEventListener((EventListener) object);
-		}
+//		if (object instanceof EventListener) {
+//			internalBuilder.addEventListener((EventListener) object);
+//		}
 		if (builder instanceof SimpleListBuilder) {
 			SimpleListBuilder slb = (SimpleListBuilder) builder;
 			if (slb.getType().equals("functions")) {

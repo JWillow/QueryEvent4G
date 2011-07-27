@@ -59,17 +59,18 @@ class Request {
 
 	List<Function> functions
 
-	private void notifyFunctions(List<Event> events) {
-		functions.each {
-			it.onPatternDetection(this, events)
-		}
-	}
-
 	/**
 	 * Call {@link Function#get()} on each {@link Function} registred
 	 */
 	void get() {
 		functions*.get()
+	}
+	
+	/**
+	* Call {@link Function#reset()} on each {@link Function} registred
+	*/
+	void reset() {
+		functions*.reset()
 	}
 
 	/**
@@ -91,7 +92,11 @@ class Request {
 		eventListeners*.afterEventProcessed(this, evaluation)
 	}
 
-
+	private void notifyFunctions(List<Event> events) {
+		functions.each {
+			it.onPatternDetection(this, events)
+		}
+	}
 
 	@Override
 	public String toString() {

@@ -58,6 +58,7 @@ class Pattern {
 		List<Event> events = window.events;
 		switch(windowState) {
 			case CLOSED :
+				windows.remove(window.id);
 				return new Evaluation(state:State.DETECTED,processedEvents:events)
 			case BROKEN :
 				windows.remove(window.id);
@@ -103,7 +104,7 @@ class Pattern {
 	// ------------
 	// BUILDER PART
 	// ------------
-	private Pattern() {
+	protected Pattern() {
 	}
 
 	public static Builder builder() {
