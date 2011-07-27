@@ -9,7 +9,7 @@ import org.homework.mcep.request.Pattern.Evaluation;
  * 
  * @author Willow
  */
-public interface EventListener {
+public interface EventProcessedListener {
 
 	/**
 	 * Call before the {@link Request#accept} method on each {@link Event}

@@ -5,7 +5,7 @@ import java.util.Map;
 
 import org.homework.mcep.dsl.builder.Builder;
 import org.homework.mcep.dsl.builder.GroovySupportingBuilder;
-import org.homework.mcep.request.EventListener;
+import org.homework.mcep.request.EventProcessedListener;
 import org.homework.mcep.request.Function;
 import org.homework.mcep.request.Functions;
 import org.homework.mcep.request.Pattern;
@@ -50,8 +50,8 @@ public class RequestBuilder implements GroovySupportingBuilder<Request> {
 		if(object instanceof Pattern) {
 			internalBuilder.workAroundPattern((Pattern) object);
 		}
-		if (object instanceof EventListener) {
-			internalBuilder.addEventListener((EventListener) object);
+		if (object instanceof EventProcessedListener) {
+			internalBuilder.addEventListener((EventProcessedListener) object);
 		}
 		if (builder instanceof SimpleListBuilder) {
 			SimpleListBuilder slb = (SimpleListBuilder) builder;

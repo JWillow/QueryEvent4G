@@ -3,14 +3,14 @@ package org.homework.mcep.request.eventlistener
 import java.util.List
 
 import org.homework.mcep.Event
-import org.homework.mcep.request.EventListener
+import org.homework.mcep.request.EventProcessedListener
 import org.homework.mcep.request.Function
 import org.homework.mcep.request.Functions
 import org.homework.mcep.request.Pattern.Evaluation;
 import org.homework.mcep.request.Request
 import org.homework.mcep.request.Window
 
-class ScheduledNotification implements EventListener, Functions {
+class ScheduledNotification implements EventProcessedListener, Functions {
 
 	List<Function> functionsToNotified;
 	int interval

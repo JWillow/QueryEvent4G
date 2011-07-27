@@ -51,7 +51,7 @@ import org.homework.mcep.request.eventlistener.ScheduledNotification;
  */
 class Request {
 
-	List<EventListener> eventListeners;
+	List<EventProcessedListener> eventListeners;
 
 	String description
 
@@ -115,7 +115,7 @@ class Request {
 
 	public static class Builder {
 		private Pattern pattern = null;
-		private List<EventListener> eventListeners = []
+		private List<EventProcessedListener> eventListeners = []
 		private List<Function> functions = [];
 		private String description
 
@@ -124,7 +124,7 @@ class Request {
 			return this
 		}
 
-		public Builder addEventListener(EventListener eventListener) {
+		public Builder addEventListener(EventProcessedListener eventListener) {
 			eventListeners << eventListener
 			return this
 		}

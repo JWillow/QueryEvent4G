@@ -11,7 +11,7 @@ import spock.lang.Specification
 class RequestSpecification extends Specification {
 
 	def event = new Event(names:["MainEvent"],attributes:[test:"value"])
-	EventListener eventListener = Mock(EventListener)
+	EventProcessedListener eventListener = Mock(EventProcessedListener)
 	Function function = Mock(Function)
 	Pattern pattern = Mock(Pattern)
 	Request request = new Request(eventListeners:[eventListener],functions:[function],pattern:pattern)
