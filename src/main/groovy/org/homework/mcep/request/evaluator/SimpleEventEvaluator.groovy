@@ -72,12 +72,17 @@ class SimpleEventEvaluator implements Evaluator {
 		private List<Closure> criterion = []
 		private Map<String,Object> attributes = [:]
 		private String id = null;
-		private Range range = null;
+		private IntRange range = null;
 
 		private def interval = {int timeInterval, int index, boolean min, List<Event> events ->
-			Event lastEvent = events[events.size() - 1]
+			Event currentEvent = events[events.size() - 1]
 			Event eventForIntervalTest = events[index]
-			long time = lastEvent.attributes['time'] - eventForIntervalTest.attributes['time']
+			if(index == -1) {
+				eventForIntervalTest = events[events.size() - 1]
+			} else {
+				eventForIntervalTest = events[index]
+			}
+			long time = currentEvent.attributes['time'] - eventForIntervalTest.attributes['time']
 			if(min) {
 				return time > timeInterval
 			} else {
@@ -85,7 +90,7 @@ class SimpleEventEvaluator implements Evaluator {
 			}
 		}
 
-		public Builder occurs(Range occurs) {
+		public Builder occurs(IntRange occurs) {
 			this.range = occurs
 			return this
 		}

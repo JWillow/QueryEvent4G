@@ -1,6 +1,7 @@
 package org.homework.mcep.request.dsl;
 
 import groovy.lang.Closure;
+import groovy.lang.IntRange;
 import groovy.lang.Range;
 
 import java.util.Map;
@@ -10,6 +11,24 @@ import org.homework.mcep.dsl.builder.GroovySupportingBuilder;
 import org.homework.mcep.request.Counter;
 import org.homework.mcep.request.evaluator.SimpleEventEvaluator;
 
+/**
+ * Different examples :
+ * 
+ * <pre>
+ * event(name:'RessourceEvent',attributes:[state:'ACDAddrBusyEv',skill:'6192000'],occurs:0..3)
+ * </pre>
+ * 
+ * <pre>
+ * event(name:'RessourceEvent',select:{List<Event> events -> lastEvents(events).state = 'ACDAddrBusyEv'})
+ * </pre>
+ * 
+ * <pre>
+ * event(name:'RessourceEvent',minIntervalWithLastEventInSecond:10)
+ * </pre>
+ * 
+ * @author Willow
+ * 
+ */
 public class SimpleEventEvaluatorBuilder implements
 		GroovySupportingBuilder<SimpleEventEvaluator> {
 
@@ -27,19 +46,39 @@ public class SimpleEventEvaluatorBuilder implements
 	}
 
 	private int getIndex(String attribut) {
-		if (attribut.endsWith("First")) {
+		if (attribut.contains("First")) {
 			return 0;
 		}
-		if (attribut.endsWith("Second")) {
+		if (attribut.contains("Second")) {
 			return 1;
 		}
-		if (attribut.endsWith("Third")) {
+		if (attribut.contains("Third")) {
 			return 2;
 		}
-		if (attribut.endsWith("Fourth")) {
+		if (attribut.contains("Fourth")) {
 			return 3;
 		}
 		return -1;
+	}
+
+	private int getTime(String attribut, int value) {
+		if (attribut.endsWith("InMillis")) {
+			return value;
+		}
+		value = value * 1000;
+		if (attribut.endsWith("InSecond")) {
+			return value;
+		}
+		value = value * 60;
+		if (attribut.endsWith("InMinute")) {
+			return value;
+		}
+		value = value * 60;
+		if (attribut.endsWith("InHour")) {
+			return value;
+		}
+		throw new IllegalArgumentException(String.format(
+				"attribut[%s] not supported !", attribut));
 	}
 
 	public GroovySupportingBuilder withAttributes(Map<String, Object> attributes) {
@@ -53,13 +92,15 @@ public class SimpleEventEvaluatorBuilder implements
 			} else if (attribut.equals("attributes")) {
 				internalBuilder.selectOnAttributes((Map) entry.getValue());
 			} else if (attribut.startsWith("occurs")) {
-				internalBuilder.occurs((Range<Comparable>) entry.getValue());
+				internalBuilder.occurs((IntRange) entry.getValue());
 			} else if (attribut.startsWith("maxInterval")) {
 				internalBuilder.withMaxIntervalCriteria(
-						(Integer) entry.getValue(), getIndex(attribut));
+						getTime(attribut, (Integer) entry.getValue()),
+						getIndex(attribut));
 			} else if (attribut.startsWith("minInterval")) {
 				internalBuilder.withMinIntervalCriteria(
-						(Integer) entry.getValue(), getIndex(attribut));
+						getTime(attribut, (Integer) entry.getValue()),
+						getIndex(attribut));
 			} else {
 				throw new IllegalArgumentException(String.format(
 						"Field [%s] unknown for EventDefinitionBuilder !",
