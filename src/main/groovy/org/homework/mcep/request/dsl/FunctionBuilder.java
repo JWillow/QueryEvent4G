@@ -6,16 +6,16 @@ import java.util.Map;
 
 import org.homework.mcep.dsl.builder.Builder;
 import org.homework.mcep.dsl.builder.GroovySupportingBuilder;
-import org.homework.mcep.request.function.ClosureFunction;
+import org.homework.mcep.request.function.BasicFunction;
 
 public class FunctionBuilder implements
-		GroovySupportingBuilder<ClosureFunction> {
+		GroovySupportingBuilder<BasicFunction> {
 
-	ClosureFunction.Builder internalBuilder = ClosureFunction.builder();
+	BasicFunction.Builder internalBuilder = BasicFunction.builder();
 
-	public ClosureFunction build() {
-		ClosureFunction cf = internalBuilder.build();
-		internalBuilder = ClosureFunction.builder();
+	public BasicFunction build() {
+		BasicFunction cf = internalBuilder.build();
+		internalBuilder = BasicFunction.builder();
 		return cf;
 	}
 

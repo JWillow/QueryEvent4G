@@ -6,13 +6,13 @@ import java.util.Map;
 
 import org.homework.mcep.dsl.builder.Builder;
 import org.homework.mcep.dsl.builder.GroovySupportingBuilder;
-import org.homework.mcep.request.function.ClosureFunction;
+import org.homework.mcep.request.function.BasicFunction;
 
 public class CountFunctionBuilder implements
-GroovySupportingBuilder<ClosureFunction> {
+GroovySupportingBuilder<BasicFunction> {
 
 	String by = null;
-	ClosureFunction.Builder internalBuilder = ClosureFunction.builder();
+	BasicFunction.Builder internalBuilder = BasicFunction.builder();
 
 	def countCore = {attr, context, events->
 		def key = "cpt"
@@ -23,14 +23,14 @@ GroovySupportingBuilder<ClosureFunction> {
 		(context.containsKey(key))?context[key]++:(context[key] = 1)
 	}
 	
-	public ClosureFunction build() {
+	public BasicFunction build() {
 		if(!by) {
 			by=''
 		}
 		def newClos = countCore.curry(by)
 		internalBuilder.withCore(newClos)
-		ClosureFunction cf = internalBuilder.build();
-		internalBuilder = ClosureFunction.builder();
+		BasicFunction cf = internalBuilder.build();
+		internalBuilder = BasicFunction.builder();
 		by = null;
 		return cf;
 	}

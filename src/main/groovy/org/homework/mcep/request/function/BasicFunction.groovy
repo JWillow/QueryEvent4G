@@ -6,17 +6,17 @@ import org.homework.mcep.Event
 import org.homework.mcep.request.Function
 import org.homework.mcep.request.Request
 
-class ClosureFunction implements Function {
-	Closure notification;
-	Closure core;
+class BasicFunction implements Function {
+	Notifier notification;
+	Core core;
 	Map<Object,Object> context = [:];
 
 	void onPatternDetection(Request request, List<Event> events) {
-		core(context,events)
+		core.onPatternDetection context, events
 	}
 
 	void get() {
-		notification(context);
+		notification.get context;
 	}
 
 	void reset() {
@@ -26,28 +26,37 @@ class ClosureFunction implements Function {
 	// ------------
 	// BUILDER PART
 	// ------------
-	private ClosureFunction() {}
+	private BasicFunction() {}
 
 	public static Builder builder() {
 		return new Builder();
 	}
 	
 	public static class Builder {
-		private Closure core;
-		private Closure notification= {println "Notification $it"};
+		private Core core;
+		private Notifier notification= {println "Notification $it"} as Notifier;
 
 		public Builder withNotification(Closure notification) {
+			this.notification = notification as Notifier
+			return this
+		}
+
+		public Builder withNotification(Notifier notification) {
 			this.notification = notification
 			return this
 		}
-
+		
 		public Builder withCore(Closure core) {
+			this.core = core as Core
+			return this
+		}
+		
+		public Builder withCore(Core core) {
 			this.core = core
 			return this
 		}
-
-		public ClosureFunction build() {
-			ClosureFunction cf = new ClosureFunction()
+		public BasicFunction build() {
+			BasicFunction cf = new BasicFunction()
 			cf.core = this.core
 			cf.notification = this.notification
 			return cf
