@@ -46,7 +46,7 @@ public class DependOnTokenBuilder implements
 
 	}
 
-	public GroovySupportingBuilder withBuilder(Builder builder) {
+	public GroovySupportingBuilder withBuilder(String childName, Builder builder) {
 		throw new UnsupportedOperationException();
 	}
 

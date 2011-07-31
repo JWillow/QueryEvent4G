@@ -15,7 +15,7 @@ class BasicFunction implements Function {
 		core.onPatternDetection context, events
 	}
 
-	void get() {
+	void get(long at) {
 		notification.get context;
 	}
 

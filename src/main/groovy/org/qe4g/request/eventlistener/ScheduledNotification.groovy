@@ -29,7 +29,7 @@ class ScheduledNotification implements EventProcessedListener, Functions {
 		initCurrentTimeIfNecessary(dateInMillis)
 		if(currentTime + interval < dateInMillis) {
 			functionsToNotified.each {
-				it.get()
+				it.get(currentTime)
 				if(reset) {
 					it.reset()
 				}

@@ -55,7 +55,7 @@ GroovySupportingBuilder<BasicFunction> {
 		return this;
 	}
 
-	public GroovySupportingBuilder withBuilder(Builder builder) {
+	public GroovySupportingBuilder withBuilder(String childName, Builder builder) {
 		throw new IllegalArgumentException("No child node accepted !");
 	}
 }

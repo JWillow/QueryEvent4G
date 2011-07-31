@@ -28,7 +28,7 @@ public class NotOperatorEvaluatorBuilder implements
 		throw new IllegalArgumentException();
 	}
 
-	public GroovySupportingBuilder withBuilder(Builder builder) {
+	public GroovySupportingBuilder withBuilder(String childName, Builder builder) {
 		Object object = builder.build();
 		if(object instanceof Evaluator) {
 			internalBuilder.onEvaluator((Evaluator) object);

@@ -36,7 +36,7 @@ public class ParserEngineBuilder implements
 		throw new UnsupportedOperationException();
 	}
 
-	public GroovySupportingBuilder withBuilder(Builder builder) {
+	public GroovySupportingBuilder withBuilder(String childName, Builder builder) {
 		Object object = builder.build();
 		if (object instanceof Extractor) {
 			internalBuilder.withExtractor((Extractor) object);

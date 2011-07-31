@@ -4,6 +4,10 @@ import java.util.Map;
 
 public interface Notifier {
 
-	void get(Map<Object,Object> context);
+	/**
+	 * @param context
+	 * @param at - time in millisecond on the notification
+	 */
+	void get(Map<Object,Object> context,long at);
 	
 }

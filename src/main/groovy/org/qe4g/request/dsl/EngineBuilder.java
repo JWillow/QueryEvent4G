@@ -25,7 +25,7 @@ public class EngineBuilder implements GroovySupportingBuilder<RequestDispatcher>
 		throw new UnsupportedOperationException();
 	}
 
-	public GroovySupportingBuilder withBuilder(Builder builder) {
+	public GroovySupportingBuilder withBuilder(String childName, Builder builder) {
 		Object object = builder.build();
 		if (object instanceof Request) {
 			internalBuilder.withRequestEngine((Request) object);

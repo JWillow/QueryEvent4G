@@ -61,7 +61,7 @@ public class ScheduledNotificationBuilder implements
 				"attribut[%s] not supported !", attribut));
 	}
 
-	public GroovySupportingBuilder withBuilder(Builder builder) {
+	public GroovySupportingBuilder withBuilder(String childName, Builder builder) {
 		Object object = builder.build();
 		if (object instanceof Function) {
 			internalBuilder.onFunction((Function) object);

@@ -41,26 +41,32 @@ public abstract class GroovyBuilder<T> extends BuilderSupport implements
 		return builder;
 	}
 
+	private String childName;
+	
 	protected void setParent(Object parent, Object child) {
 	}
 
 	protected Object createNode(Object name) {
 		Counter.start();
+		childName = (String) name;
 		return getBuilder(name);
 	}
 
 	protected Object createNode(Object name, Object value) {
 		Counter.start();
+		childName = (String) name;
 		return getBuilder(name).withData(value);
 	}
 
 	protected Object createNode(Object name, Map attributes) {
 		Counter.start();
+		childName = (String) name;
 		return getBuilder(name).withAttributes(attributes);
 	}
 
 	protected Object createNode(Object name, Map attributes, Object value) {
 		Counter.start();
+		childName = (String) name;
 		return getBuilder(name).withAttributes(attributes).withData(value);
 	}
 
@@ -82,7 +88,7 @@ public abstract class GroovyBuilder<T> extends BuilderSupport implements
 			return;
 		}
 		GroovySupportingBuilder pBuilder = (GroovySupportingBuilder) parent;
-		pBuilder.withBuilder((Builder) child);
+		pBuilder.withBuilder(childName,(Builder) child);
 		Counter.stop();
 	}
 }

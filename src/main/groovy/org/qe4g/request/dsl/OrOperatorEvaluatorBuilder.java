@@ -29,7 +29,7 @@ public class OrOperatorEvaluatorBuilder implements
 		throw new IllegalArgumentException();
 	}
 
-	public GroovySupportingBuilder withBuilder(Builder builder) {
+	public GroovySupportingBuilder withBuilder(String childName, Builder builder) {
 		Object object = builder.build();
 		internalBuilder.affectId(Counter.getId());
 		if (object instanceof Evaluator) {

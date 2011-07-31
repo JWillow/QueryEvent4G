@@ -40,9 +40,10 @@ public interface GroovySupportingBuilder<T> extends Builder<T> {
 	 * 	}
 	 * }
 	 * </pre>
+	 * @param childName TODO
 	 * @param builder
 	 * @return
 	 */
-	GroovySupportingBuilder withBuilder(Builder builder);
+	GroovySupportingBuilder withBuilder(String childName, Builder builder);
 
 }

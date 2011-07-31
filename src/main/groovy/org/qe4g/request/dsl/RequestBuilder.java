@@ -39,7 +39,7 @@ public class RequestBuilder implements GroovySupportingBuilder<Request> {
 		return this;
 	}
 
-	public GroovySupportingBuilder<Request> withBuilder(Builder builder) {
+	public GroovySupportingBuilder<Request> withBuilder(String childName, Builder builder) {
 		Object object = builder.build();
 		if (object instanceof Function) {
 			internalBuilder.addFunction((Function) object);

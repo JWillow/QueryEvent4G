@@ -52,7 +52,7 @@ public class RegexpExtractorBuilder implements
 
 	}
 
-	public GroovySupportingBuilder withBuilder(Builder builder) {
+	public GroovySupportingBuilder withBuilder(String childName, Builder builder) {
 		Object object = builder.build();
 		if (object instanceof DependOnToken) {
 			internalBuilder.dependOnToken((DependOnToken) object);

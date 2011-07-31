@@ -34,7 +34,7 @@ public class SimpleListBuilder implements GroovySupportingBuilder<List<Object>> 
 		throw new UnsupportedOperationException();
 	}
 
-	public GroovySupportingBuilder<List<Object>> withBuilder(Builder builder) {
+	public GroovySupportingBuilder<List<Object>> withBuilder(String childName, Builder builder) {
 		list.add(builder.build());
 		return this;
 	}

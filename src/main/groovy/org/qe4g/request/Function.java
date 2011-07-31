@@ -23,9 +23,12 @@ public interface Function {
 	void onPatternDetection(Request request, List<Event> events);
 
 	/**
-	 * Explicit demand to {@link Function} to produce a result
+	 * Demand to {@link Function} to produce a result if {@link Function}
+	 * implementation aggregate result for example
+	 * 
+	 * @param at - demand date
 	 */
-	void get();
+	void get(long at);
 
 	/**
 	 * Demand to {@link Function} to reset all context elements that can be used

@@ -38,7 +38,7 @@ public class PatternBuilder implements GroovySupportingBuilder<Pattern> {
 		return this;
 	}
 
-	public GroovySupportingBuilder withBuilder(Builder builder) {
+	public GroovySupportingBuilder withBuilder(String childName, Builder builder) {
 		Object object = builder.build();
 		if (object instanceof Evaluator) {
 			internalBuilder.addEvaluator((Evaluator) object);
