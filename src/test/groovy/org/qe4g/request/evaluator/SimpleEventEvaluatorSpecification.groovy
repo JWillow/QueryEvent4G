@@ -87,4 +87,15 @@ class SimpleEventEvaluatorSpecification extends Specification {
 		expect:	see.evaluate(context,[eventBC]) == Response.KO
 	}
 	
+	def "If the evaluator defined a positive link closure without others criterion then the Response is OK"() {
+		setup:
+		see.linkOn[1] = {Event e1, Event e2 -> true}
+		expect:see.evaluate(context,[eventBC,eventCWithAttAAndC]) == Response.OK
+	}
+
+	def "If the evaluator defined a negative link closure without others criterion then the Response is KO"() {
+		setup:
+		see.linkOn[1] = {Event e1, Event e2 -> false}
+		expect:see.evaluate(context,[eventBC,eventCWithAttAAndC]) == Response.KO
+	}
 }

@@ -44,9 +44,9 @@ class ScheduledNotification implements EventProcessedListener, Functions {
 
 	/**
 	 * Do nothing
-	 * @see org.qe4g.request.EventListener#afterEventProcessed(org.qe4g.request.Request, org.qe4g.request.Pattern.Evaluation)
+	 * @see org.qe4g.request.EventListener#afterEventProcessed(org.qe4g.request.Request, java.util.Collection<org.qe4g.request.Pattern.Evaluation>)
 	 */
-	public void afterEventProcessed(Request request, Evaluation evaluation) {
+	public void afterEventProcessed(Request request, Collection<Evaluation> evaluations) {
 		// DO NOTHING
 	}
 

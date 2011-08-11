@@ -6,6 +6,7 @@ import org.qe4g.request.Evaluator.Response;
 
 class SimpleEventEvaluator implements Evaluator {
 	def name
+	Map<Integer,Closure> linkOn = [:];
 	Map<String,Object> attributes = [:]
 	String id;
 	List<Closure> criterions
@@ -13,7 +14,7 @@ class SimpleEventEvaluator implements Evaluator {
 
 	private boolean evaluateOnNameAndAttributesAndCriterion(Map<String,Object> context, List<Event> events) {
 		Event event = events[events.size() -1]
-		if(!event.names.contains(name)) {
+		if(name != null && !event.names.contains(name)) {
 			return false
 		}
 		if(attributes.size() != 0) {
@@ -26,9 +27,18 @@ class SimpleEventEvaluator implements Evaluator {
 		}
 		return criterions.every {it(events)}
 	}
-	public Response evaluate(Map<String,Object> context, List<Event> events) {
-		boolean result = evaluateOnNameAndAttributesAndCriterion(context, events)
 
+	private boolean evaluateOnLinkOnCriteria(Map<String,Object> context, List<Event> events) {
+		return linkOn.every {Integer key,Closure areLinked ->
+			if(key < 1) {
+				return areLinked(events[events.size() -1], events[events.size() -1])
+			}
+			return areLinked(events[events.size() -1], events[key])
+		}
+	}
+
+	public Response evaluate(Map<String,Object> context, List<Event> events) {
+		boolean result = evaluateOnLinkOnCriteria(context,events) && evaluateOnNameAndAttributesAndCriterion(context, events)
 		if(!result) {
 			if(occurs.contains(getCounter(context))) {
 				return Response.CONTINUE_WITH_NEXT_EVALUATOR
@@ -68,6 +78,7 @@ class SimpleEventEvaluator implements Evaluator {
 		return new Builder();
 	}
 	public static class Builder {
+		private Map<Integer,Closure> linkOn;
 		private String event
 		private List<Closure> criterion = []
 		private Map<String,Object> attributes = [:]
@@ -122,9 +133,14 @@ class SimpleEventEvaluator implements Evaluator {
 			return this
 		}
 
+		public Builder linkOn(Map<Integer,Closure> linkOn) {
+			this.linkOn = linkOn;
+			return this
+		}
 		public SimpleEventEvaluator build() {
 			SimpleEventEvaluator evaluator = new SimpleEventEvaluator()
 			evaluator.id = this.id
+			evaluator.linkOn = this.linkOn
 			evaluator.name = this.event
 			evaluator.attributes = this.attributes
 			evaluator.criterions = this.criterion

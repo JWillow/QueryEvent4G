@@ -25,8 +25,6 @@ class Pattern {
 		INTEGRATED,
 		/** The {@link Event} has broken the pattern detection, the evaluation by {@link Evaluator} is negative*/ 
 		BROKEN,
-		/** The {@link Event} has broken the pattern detection in progress, but it has been integrated in new pattern detection */ 
-		REBUILD
 	}
 
 	List<Evaluator> evaluators
@@ -37,37 +35,17 @@ class Pattern {
 	 */
 	def accept = {true}
 
-	/**
-	 * <p>Closure used by the pattern detection algorithm to regroup {@link Event} around business problematic.
-	 * <p>By default, no grouping are performed.
-	 */
-	def groupBy = {"groupBy"}
+	Collection<Window> windows = [];
 
-	/**
-	 * {@link Window} identified by groupBy id.
-	 */
-	Map<String,Window> windows = [:]
-
-	public Evaluation evaluate(Event event) {
-		if(!accept(event)) {
-			return new Evaluation(state:State.REJECTED,processedEvents:[event])
-		}
-
-		Window window = findWindow(event)
+	private Evaluation evaluate(Event event, Window window) {
 		org.qe4g.request.Window.State windowState = window.processEvent(event)
 		List<Event> events = window.events;
 		switch(windowState) {
 			case CLOSED :
-				windows.remove(window.id);
+				windows.remove(window);
 				return new Evaluation(state:State.DETECTED,processedEvents:events)
 			case BROKEN :
-				windows.remove(window.id);
-				if(events.size() >= 2) {
-					Evaluation evaluation = evaluate(event)
-					if(evaluation.state == State.INTEGRATED) {
-						return new Evaluation(state:State.REBUILD, processedEvents:events)
-					}
-				}
+				windows.remove(window);
 				return new Evaluation(state:State.BROKEN,processedEvents:events)
 			case OPEN :
 				return new Evaluation(state:State.INTEGRATED,processedEvents:events)
@@ -76,24 +54,22 @@ class Pattern {
 		}
 	}
 
-	/**
-	 * Créer pour faciliter les tests unitaires, pour mocker un objet {@link Window}
-	 * @param id
-	 * @param requestEventDefinitions
-	 * @return
-	 */
-	protected Window createWindow(def id, def evaluators) {
-		return new Window(id:id, evaluators:evaluators)
-	}
+	def createWindow = { return new Window(evaluators:evaluators)}
 
-	protected Window findWindow(Event event) {
-		def groupById = groupBy(event)
-		Window window = windows[groupById]
-		if(!window) {
-			window = createWindow(groupById, evaluators)
-			windows[groupById] = window
+	public List<Evaluation> evaluate(Event event) {
+		if(!accept(event)) {
+			return [
+				new Evaluation(state:State.REJECTED,processedEvents:[event])
+			]
 		}
-		return window
+		windows << createWindow()
+		Collection<Evaluation> result = []
+		
+		new ArrayList(windows).each { window ->
+			result << evaluate(event,window)
+		}
+		
+		return result
 	}
 
 	public static class Evaluation {
@@ -113,14 +89,8 @@ class Pattern {
 
 	public static class Builder {
 
-		private Closure groupBy = null;
 		private Closure accept = null;
 		private List<Evaluator> evaluators = [];
-
-		public Builder withGroupBy(Closure closure) {
-			groupBy = closure;
-			return this;
-		}
 
 		public Builder addEvaluator(Evaluator evaluator) {
 			evaluators << evaluator;
@@ -134,9 +104,6 @@ class Pattern {
 
 		public Pattern build() {
 			Pattern pattern = new Pattern();
-			if(groupBy != null) {
-				pattern.groupBy = this.groupBy;
-			}
 			if(accept != null) {
 				pattern.accept = this.accept;
 			}

@@ -1,5 +1,7 @@
 package org.qe4g.request;
 
+import java.util.Collection;
+
 import org.qe4g.Event;
 import org.qe4g.request.Pattern.Evaluation;
 
@@ -27,8 +29,7 @@ public interface EventProcessedListener {
 	 * 
 	 * @param request
 	 *            - Request that handle the {@link Event}
-	 *            - {@link Window} that handle the {@link Event}
-	 * @param evaluation
+	 * @param evaluations
 	 */
-	void afterEventProcessed(Request request, Evaluation evaluation);
+	void afterEventProcessed(Request request, Collection<Evaluation> evaluations);
 }

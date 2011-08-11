@@ -10,8 +10,6 @@ class Window {
 	public enum State {
 		CLOSED,OPEN,BROKEN
 	}
-	/** Identifiant de la fenêtre */
-	def id
 
 	/** Initialisé à l'état {@link State#TO_CONTINUE} */
 	def state = OPEN
@@ -50,7 +48,7 @@ class Window {
 				state = BROKEN
 				break
 			default:
-				throw new IllegalStateException(response + " not supported !")
+				throw new IllegalStateException("Not supported !")
 		}
 		return state
 	}

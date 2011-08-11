@@ -28,8 +28,6 @@ public class PatternBuilder implements GroovySupportingBuilder<Pattern> {
 			String attribut = entry.getKey();
 			if (attribut.equals("accept")) {
 				internalBuilder.withAccept((Closure<?>) entry.getValue());
-			} else if (attribut.equals("groupBy")) {
-				internalBuilder.withGroupBy((Closure<?>) entry.getValue());
 			} else {
 				throw new IllegalArgumentException("Attribut " + attribut
 						+ " is not expected !");

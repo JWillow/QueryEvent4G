@@ -85,11 +85,13 @@ class Request {
 	 */
 	void onEvent(Event event) {
 		eventListeners*.beforeEventProcessing(this ,event)
-		Evaluation evaluation = pattern.evaluate(event)
-		if(evaluation.state == State.DETECTED) {
-			notifyFunctions(evaluation.processedEvents)
+		Collection<Evaluation> evaluations = pattern.evaluate(event)
+		evaluations.each { evaluation -> 
+			if(evaluation.state == State.DETECTED) {
+				notifyFunctions(evaluation.processedEvents)
+			}
 		}
-		eventListeners*.afterEventProcessed(this, evaluation)
+		eventListeners*.afterEventProcessed(this, evaluations)
 	}
 
 	private void notifyFunctions(List<Event> events) {

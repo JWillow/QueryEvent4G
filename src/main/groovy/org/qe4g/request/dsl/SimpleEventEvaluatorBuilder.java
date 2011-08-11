@@ -8,6 +8,7 @@ import java.util.Map;
 import org.qe4g.dsl.builder.Builder;
 import org.qe4g.dsl.builder.GroovySupportingBuilder;
 import org.qe4g.request.Counter;
+import org.qe4g.request.dsl.keyword.LinkOn;
 import org.qe4g.request.evaluator.SimpleEventEvaluator;
 
 /**
@@ -103,6 +104,8 @@ public class SimpleEventEvaluatorBuilder implements
 				internalBuilder.withMinIntervalCriteria(
 						getTime(attribut, (Integer) entry.getValue()),
 						getIndex(attribut));
+			} else if (attribut.startsWith("linkOn")) {
+				internalBuilder.linkOn(LinkOn.get(attribut, entry.getValue()));
 			} else {
 				throw new IllegalArgumentException(String.format(
 						"Field [%s] unknown for EventDefinitionBuilder !",
@@ -111,7 +114,7 @@ public class SimpleEventEvaluatorBuilder implements
 		}
 		return this;
 	}
-
+	
 	public GroovySupportingBuilder withBuilder(String childName, Builder builder) {
 		throw new UnsupportedOperationException();
 	}
