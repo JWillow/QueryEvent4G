@@ -13,8 +13,6 @@ class LinkOn {
 	 * Expression (<code><-></code) to indicate an explicit relation between two attributes
 	 */
 	private static final String EXPLICITE_RELATION_SYMBOL = "<->"
-	
-	private static final int LAST_EVENT_INDICE = 0;
 
 	private static def linkEvaluation = { List<Closure> conditions, Event current, Event other ->
 		return conditions.every { it(current,other) }
@@ -42,7 +40,11 @@ class LinkOn {
 	private static List<Closure> onListExpression(Collection collections, boolean orCondition) {
 		def result = []
 		collections.each {
-			result << onStringExpression(it);
+			if(it instanceof String) {
+				result << onStringExpression(it);
+			} else if (it instanceof Closure) {
+				result << it
+			}
 		}
 		if(orCondition) {
 			def closure = orEvaluation.curry(new ArrayList(result))
@@ -78,6 +80,8 @@ class LinkOn {
 			conditions.addAll(onListExpression(value, false))
 		} else if (value instanceof Map) {
 			conditions.addAll(onMapExpression(value))
+		} else if (value instanceof Closure) {
+			conditions  << value
 		}
 		return linkEvaluation.curry(conditions);
 	}
@@ -95,12 +99,12 @@ class LinkOn {
 				if(entry.key instanceof Integer) {
 					results.put(entry.key, get(entry.value))
 				} else {
-					results.put(LAST_EVENT_INDICE, get(value))
+					results.put(0, get(value))
 					break;
 				}
 			}
 		} else {
-			return [LAST_EVENT_INDICE:get(value)];
+			return [0:get(value)];
 		}
 		return results
 	}

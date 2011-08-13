@@ -11,7 +11,32 @@ class SimpleEventEvaluator implements Evaluator {
 	String id;
 	List<Closure> criterions
 	Range<Integer> occurs;
+	
+	public Response evaluate(Map<String,Object> context, List<Event> events) {
+		if(!evaluateOnLinkOnCriteria(context,events)) {
+			return Response.NOT_LINKED;
+		}
 
+		if(!evaluateOnNameAndAttributesAndCriterion(context, events)) {
+			if(occurs.contains(getCounter(context))) {
+				return Response.CONTINUE_WITH_NEXT_EVALUATOR
+			} else {
+				return Response.KO
+			}
+		}
+
+		int checkCounter = getCounterAndIncrement(context)
+		if (checkCounter > occurs[occurs.size() - 1] ) {
+			return Response.KO;
+		} else if (checkCounter == occurs[occurs.size() - 1]) {
+			return Response.OK
+		} else if (checkCounter < occurs[0]){
+			return Response.KO_BUT_KEEP_ME
+		} else {
+			return Response.OK_BUT_KEEP_ME
+		}
+	}
+	
 	private boolean evaluateOnNameAndAttributesAndCriterion(Map<String,Object> context, List<Event> events) {
 		Event event = events[events.size() -1]
 		if(name != null && !event.names.contains(name)) {
@@ -34,26 +59,6 @@ class SimpleEventEvaluator implements Evaluator {
 				return areLinked(events[events.size() -1], events[events.size() -1])
 			}
 			return areLinked(events[events.size() -1], events[key])
-		}
-	}
-
-	public Response evaluate(Map<String,Object> context, List<Event> events) {
-		boolean result = evaluateOnLinkOnCriteria(context,events) && evaluateOnNameAndAttributesAndCriterion(context, events)
-		if(!result) {
-			if(occurs.contains(getCounter(context))) {
-				return Response.CONTINUE_WITH_NEXT_EVALUATOR
-			} else {
-				return Response.KO
-			}
-		}
-
-		int checkCounter = getCounterAndIncrement(context)
-		if (checkCounter > occurs[occurs.size() - 1] ) {
-			return Response.KO;
-		} else if (checkCounter == occurs[occurs.size() - 1]) {
-			return Response.OK
-		} else {
-			return Response.OK_BUT_KEEP_ME
 		}
 	}
 

@@ -8,7 +8,7 @@ import org.qe4g.request.Evaluator.Response;
 class Window {
 
 	public enum State {
-		CLOSED,OPEN,BROKEN
+		CLOSED,OPEN,BROKEN,NOT_LINKED
 	}
 
 	/** Initialisé à l'état {@link State#TO_CONTINUE} */
@@ -34,15 +34,24 @@ class Window {
 			return state
 		}
 		events << event
-		switch(applyEvaluator(event,indexNextEvaluatorToUse)) {
-			case Response.CONTINUE_WITH_NEXT_EVALUATOR:
-			case Response.OK :
-				if(indexNextEvaluatorToUse == evaluators.size()) {
-					state = CLOSED
-					break
-				}
+		def responseState = applyEvaluator(event,indexNextEvaluatorToUse)
+		switch(responseState) {
+			case Response.NOT_LINKED:
+				state = NOT_LINKED
+				events.remove(events.size() - 1)
+				break
+			case Response.KO_BUT_KEEP_ME:
+				state = OPEN
+				break;
 			case Response.OK_BUT_KEEP_ME:
 				state = OPEN
+			case Response.CONTINUE_WITH_NEXT_EVALUATOR:
+			case Response.OK :
+				if(indexNextEvaluatorToUse == evaluators.size() - 1) {
+					state = CLOSED
+				} else if(responseState == Response.OK) {
+					indexNextEvaluatorToUse += 1
+				}
 				break
 			case Response.KO :
 				state = BROKEN
@@ -50,6 +59,7 @@ class Window {
 			default:
 				throw new IllegalStateException("Not supported !")
 		}
+
 		return state
 	}
 
@@ -63,16 +73,12 @@ class Window {
 			case Response.CONTINUE_WITH_NEXT_EVALUATOR:
 				return applyEvaluator(event, indexEvaluatorToUse + 1)
 				break;
-
 			case Response.OK_BUT_KEEP_ME:
-				indexNextEvaluatorToUse = indexEvaluatorToUse
-				break;
-
 			case Response.OK :
-				indexNextEvaluatorToUse = indexEvaluatorToUse + 1
+				indexNextEvaluatorToUse = indexEvaluatorToUse
 			case Response.KO :
 				break;
-		}				
+		}
 		return response;
 	}
 }

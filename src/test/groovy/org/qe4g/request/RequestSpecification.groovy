@@ -22,20 +22,8 @@ class RequestSpecification extends Specification {
 		when:request.onEvent(event)
 		then:
 		1 * eventListener.beforeEventProcessing(request,event)
-		1 * pattern.evaluate(event) >> evaluation
-		1 * eventListener.afterEventProcessed(request,evaluation)
-		and:"As the pattern is not detected, we don't apply the functions"
-		0 * function.onPatternDetection(_,_)
-	}
-
-	def "When we process an Event, we notify all listeners even if the evaluation is REBUILD"() {
-		setup:
-		Evaluation evaluation = new Evaluation(state:org.qe4g.request.Pattern.State.REBUILD)
-		when:request.onEvent(event)
-		then:
-		1 * eventListener.beforeEventProcessing(request,event)
-		1 * pattern.evaluate(event) >> evaluation
-		1 * eventListener.afterEventProcessed(request,evaluation)
+		1 * pattern.evaluate(event) >> [evaluation]
+		1 * eventListener.afterEventProcessed(request,[evaluation])
 		and:"As the pattern is not detected, we don't apply the functions"
 		0 * function.onPatternDetection(_,_)
 	}
@@ -46,8 +34,8 @@ class RequestSpecification extends Specification {
 		when:request.onEvent(event)
 		then:
 		1 * eventListener.beforeEventProcessing(request,event)
-		1 * pattern.evaluate(event) >> evaluation
-		1 * eventListener.afterEventProcessed(request,evaluation)
+		1 * pattern.evaluate(event) >> [evaluation]
+		1 * eventListener.afterEventProcessed(request,[evaluation])
 		and:"As the pattern is not detected, we don't apply the functions"
 		0 * function.onPatternDetection(_,_)
 	}
@@ -59,8 +47,8 @@ class RequestSpecification extends Specification {
 		when:request.onEvent(event)
 		then:
 		1 * eventListener.beforeEventProcessing(request,event)
-		1 * pattern.evaluate(event) >> evaluation
-		1 * eventListener.afterEventProcessed(request,evaluation)
+		1 * pattern.evaluate(event) >> [evaluation]
+		1 * eventListener.afterEventProcessed(request,[evaluation])
 		and:"As the pattern is not detected, we don't apply the functions"
 		0 * function.onPatternDetection(_,_)
 	}
@@ -71,8 +59,8 @@ class RequestSpecification extends Specification {
 		when:request.onEvent(event)
 		then:
 		1 * eventListener.beforeEventProcessing(request,event)
-		1 * pattern.evaluate(event) >> evaluation
-		1 * eventListener.afterEventProcessed(request,evaluation)
+		1 * pattern.evaluate(event) >> [evaluation]
+		1 * eventListener.afterEventProcessed(request,[evaluation])
 		and:"As the pattern is detected, we apply all the functions"
 		1 * function.onPatternDetection(request,_)
 	}

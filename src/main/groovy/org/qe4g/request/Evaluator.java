@@ -15,7 +15,7 @@ import org.qe4g.Event;
  */
 public interface Evaluator {
 	
-	public enum Response{OK,KO,CONTINUE_WITH_NEXT_EVALUATOR,OK_BUT_KEEP_ME}
+	public enum Response{OK,KO,CONTINUE_WITH_NEXT_EVALUATOR,KO_BUT_KEEP_ME,OK_BUT_KEEP_ME,NOT_LINKED}
 	
 	/**
 	 * @param events - order by arriving order inside the {@link Request}

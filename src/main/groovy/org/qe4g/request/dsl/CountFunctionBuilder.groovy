@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.qe4g.dsl.builder.Builder;
 import org.qe4g.dsl.builder.GroovySupportingBuilder;
+import org.qe4g.request.dsl.keyword.CountBy;
 import org.qe4g.request.function.BasicFunction;
 
 public class CountFunctionBuilder implements
@@ -14,21 +15,8 @@ GroovySupportingBuilder<BasicFunction> {
 	String by = null;
 	BasicFunction.Builder internalBuilder = BasicFunction.builder();
 
-	def countCore = {attr, context, events->
-		def key = "cpt"
-		if(attr != '') {
-			def event = events[events.size() - 1]
-			key = event.attributes[attr]
-		}
-		(context.containsKey(key))?context[key]++:(context[key] = 1)
-	}
-	
 	public BasicFunction build() {
-		if(!by) {
-			by=''
-		}
-		def newClos = countCore.curry(by)
-		internalBuilder.withCore(newClos)
+		internalBuilder.withCore(CountBy.get("by",by))
 		BasicFunction cf = internalBuilder.build();
 		internalBuilder = BasicFunction.builder();
 		by = null;

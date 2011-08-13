@@ -17,7 +17,7 @@ class Pattern {
 	 * @author Willow
 	 */
 	public enum State {
-		/** The {@link Event} hasn't been evaluate because the Pattern has rejected the {@link Event}. The {@link #accept}*/
+		/** The {@link Event} hasn't been evaluate because the Pattern has rejected the {@link Event}. Two cause : <ul><li>{@link #accept}</li><li>or the event is not linked</li></ul>*/
 		REJECTED,
 		/** The {@link Event} has been integrated and the pattern has been detected */
 		DETECTED,
@@ -28,6 +28,8 @@ class Pattern {
 	}
 
 	List<Evaluator> evaluators
+
+	protected def createWindow = { return new Window(evaluators:evaluators)}
 
 	/**
 	 * <p>Closure that define the acceptation strategy of published {@link Event}. If an {@link Event} is not accepted then this {@link Event} will not influence the pattern detection algorithm.
@@ -41,6 +43,8 @@ class Pattern {
 		org.qe4g.request.Window.State windowState = window.processEvent(event)
 		List<Event> events = window.events;
 		switch(windowState) {
+			case NOT_LINKED :
+				return new Evaluation(state:State.REJECTED,processedEvents:events)
 			case CLOSED :
 				windows.remove(window);
 				return new Evaluation(state:State.DETECTED,processedEvents:events)
@@ -54,7 +58,6 @@ class Pattern {
 		}
 	}
 
-	def createWindow = { return new Window(evaluators:evaluators)}
 
 	public List<Evaluation> evaluate(Event event) {
 		if(!accept(event)) {
@@ -62,13 +65,17 @@ class Pattern {
 				new Evaluation(state:State.REJECTED,processedEvents:[event])
 			]
 		}
-		windows << createWindow()
 		Collection<Evaluation> result = []
-		
+
 		new ArrayList(windows).each { window ->
 			result << evaluate(event,window)
 		}
-		
+		if(!result.any {Evaluation evaluation -> evaluation.state == State.INTEGRATED }) {
+			def window = createWindow()
+			windows << window
+			result << evaluate(event,window)
+		}
+
 		return result
 	}
 
