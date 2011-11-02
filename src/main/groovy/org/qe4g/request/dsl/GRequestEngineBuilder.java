@@ -12,8 +12,8 @@ public class GRequestEngineBuilder extends GroovyBuilder<Request> {
 		builders = new HashMap<String, GroovySupportingBuilder<?>>();
 		builders.put("request", new RequestBuilder());
 		builders.put("event", new SimpleEventEvaluatorBuilder());
-		builders.put("not", new NotOperatorEvaluatorBuilder());
-		builders.put("or", new OrOperatorEvaluatorBuilder());
+		//builders.put("not", new NotOperatorEvaluatorBuilder());
+		//builders.put("or", new OrOperatorEvaluatorBuilder());
 		builders.put("engine", new EngineBuilder());
 		builders.put("pattern", new PatternBuilder());
 		builders.put("onPatternDetection", new SimpleListBuilder("functions"));

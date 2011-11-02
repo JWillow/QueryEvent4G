@@ -8,8 +8,8 @@ import org.qe4g.dsl.builder.GroovySupportingBuilder;
 import org.qe4g.request.EventProcessedListener;
 import org.qe4g.request.Function;
 import org.qe4g.request.Functions;
-import org.qe4g.request.Pattern;
 import org.qe4g.request.Request;
+import org.qe4g.request.pattern.Pattern;
 
 public class RequestBuilder implements GroovySupportingBuilder<Request> {
 

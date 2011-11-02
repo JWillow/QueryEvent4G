@@ -1,17 +1,10 @@
 package org.qe4g.request
 
-import static org.qe4g.request.Window.State.BROKEN
-import static org.qe4g.request.Window.State.CLOSED
-import static org.qe4g.request.Window.State.OPEN
-
-import groovy.lang.Closure;
-
-import java.util.List;
-
+import java.util.List
+import org.neo4j.graphdb.Node
 import org.qe4g.Event
-import org.qe4g.request.Pattern.Evaluation;
-import org.qe4g.request.Pattern.State;
-import org.qe4g.request.eventlistener.ScheduledNotification;
+import org.qe4g.request.graph.Path;
+import org.qe4g.request.pattern.Pattern
 
 /**
  * <p>Represent a Request based on pattern detection ({@link Evaluator}) and apply {@link Function} when the detection occurs.
@@ -63,14 +56,19 @@ class Request {
 	 * Call {@link Function#get()} on each {@link Function} registred
 	 */
 	void get() {
-		functions*.get()
+		//functions*.get(-1)
 	}
-	
+
 	/**
-	* Call {@link Function#reset()} on each {@link Function} registred
-	*/
+	 * Call {@link Function#reset()} on each {@link Function} registred
+	 */
 	void reset() {
 		functions*.reset()
+	}
+
+
+	boolean accept(final Event event) {
+		return pattern.accept(event)
 	}
 
 	/**
@@ -83,20 +81,10 @@ class Request {
 	 * </ul>
 	 * @param event
 	 */
-	void onEvent(Event event) {
-		eventListeners*.beforeEventProcessing(this ,event)
-		Collection<Evaluation> evaluations = pattern.evaluate(event)
-		evaluations.each { evaluation -> 
-			if(evaluation.state == State.DETECTED) {
-				notifyFunctions(evaluation.processedEvents)
-			}
-		}
-		eventListeners*.afterEventProcessed(this, evaluations)
-	}
-
-	private void notifyFunctions(List<Event> events) {
-		functions.each {
-			it.onPatternDetection(this, events)
+	void onNodeEvent(Node node) {
+		Collection<Path> paths = pattern.correlate(node)
+		paths.each { Path path ->
+			functions.each {it.onPatternDetection(this, path)}
 		}
 	}
 

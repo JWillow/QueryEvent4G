@@ -1,9 +1,11 @@
-package org.qe4g.request;
+package org.qe4g.request.evaluation;
 
-import java.util.List;
+
 import java.util.Map;
 
+import org.neo4j.graphdb.Node;
 import org.qe4g.Event;
+import org.qe4g.request.Request;
 
 /**
  * <p>
@@ -14,12 +16,14 @@ import org.qe4g.Event;
  * 
  */
 public interface Evaluator {
-	
-	public enum Response{OK,KO,CONTINUE_WITH_NEXT_EVALUATOR,KO_BUT_KEEP_ME,OK_BUT_KEEP_ME,NOT_LINKED}
-	
+
 	/**
-	 * @param events - order by arriving order inside the {@link Request}
+	 * @param events
+	 *            - order by arriving order inside the {@link Request}
 	 * @return
 	 */
-	Response evaluate(Map<String,Object> context, List<Event> events);
+	boolean evaluateOnStaticCriteria(Event event);
+	
+	Response on(Node event, Map context);
+	
 }

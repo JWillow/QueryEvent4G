@@ -6,8 +6,8 @@ import java.util.Map;
 
 import org.qe4g.dsl.builder.Builder;
 import org.qe4g.dsl.builder.GroovySupportingBuilder;
-import org.qe4g.request.Evaluator;
-import org.qe4g.request.Pattern;
+import org.qe4g.request.evaluation.Evaluator;
+import org.qe4g.request.pattern.Pattern;
 
 public class PatternBuilder implements GroovySupportingBuilder<Pattern> {
 

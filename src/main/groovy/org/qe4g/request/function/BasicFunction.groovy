@@ -5,18 +5,19 @@ import java.util.List
 import org.qe4g.Event
 import org.qe4g.request.Function
 import org.qe4g.request.Request
+import org.qe4g.request.graph.Path;
 
 class BasicFunction implements Function {
 	Notifier notification;
 	Core core;
 	Map<Object,Object> context = [:];
 
-	void onPatternDetection(Request request, List<Event> events) {
-		core.onPatternDetection context, events
+	void onPatternDetection(Request request, Path path) {
+		core.onPatternDetection(context,path)
 	}
 
 	void get(long at) {
-		notification.get context;
+		notification.get(context);
 	}
 
 	void reset() {

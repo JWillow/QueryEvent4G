@@ -32,6 +32,8 @@ class ParserEngine {
 				extractorUsed << extractor
 				Map<String,String> datas = extractor.extract(line);
 				if(!datas.isEmpty()) {
+					event.triggeredTime = datas.time
+					datas.remove('time')
 					event.attributes += datas
 					event.names << extractor.getEventName()
 				}

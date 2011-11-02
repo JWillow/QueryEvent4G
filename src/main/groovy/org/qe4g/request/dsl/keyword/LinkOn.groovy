@@ -1,5 +1,6 @@
 package org.qe4g.request.dsl.keyword
 
+import org.codehaus.groovy.runtime.CurriedClosure;
 import org.qe4g.Event
 
 /**
@@ -60,7 +61,7 @@ class LinkOn {
 			if(key == "or") {
 				result.addAll(onListExpression(value,true))
 			} else if(key == "and") {
-				result.addAll(onListExpression(value,true))
+				result.addAll(onListExpression(value,false))
 			} else {
 				if(value instanceof Collection) {
 					result.addAll(onListExpression(value,true))

@@ -4,6 +4,8 @@ import groovy.lang.Closure;
 
 import org.qe4g.Event
 import org.qe4g.request.dsl.GRequestEngineBuilder
+
+import spock.lang.AutoCleanup;
 import spock.lang.Specification;
 
 class EventBasedOnNameAndAttributeIntegration extends Specification {
@@ -14,10 +16,15 @@ class EventBasedOnNameAndAttributeIntegration extends Specification {
 	def eventC = new Event(names:["C"],attributes:[test:"C"])
 
 	def gRequestEngineBuilder = new GRequestEngineBuilder();
+	
+	@AutoCleanup("shutdown")
 	def requestEngine;
 
 	def patternDetected = 0;
-	def controlClosure = {context,event -> patternDetected++}
+	def controlClosure = {context,path -> 
+		patternDetected++
+		println path
+	}
 
 	/**
 	 * <pre>
@@ -26,6 +33,9 @@ class EventBasedOnNameAndAttributeIntegration extends Specification {
 	 *		event(name:'B',attributes:[test:'B'])
 	 *	}
 	 * </pre>
+	 * @param accept
+	 */
+	/**
 	 * @param accept
 	 */
 	private void definedPatternBasedOnNamedEventAndAttributeValue(Closure accept) {

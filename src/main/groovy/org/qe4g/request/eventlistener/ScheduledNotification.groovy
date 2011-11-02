@@ -6,11 +6,10 @@ import org.qe4g.Event
 import org.qe4g.request.EventProcessedListener
 import org.qe4g.request.Function
 import org.qe4g.request.Functions
-import org.qe4g.request.Pattern.Evaluation;
 import org.qe4g.request.Request
-import org.qe4g.request.Window
+import org.qe4g.request.graph.Path;
 
-class ScheduledNotification implements EventProcessedListener, Functions {
+class ScheduledNotification {//implements EventProcessedListener, Functions {
 
 	List<Function> functionsToNotified;
 	int interval
@@ -46,7 +45,7 @@ class ScheduledNotification implements EventProcessedListener, Functions {
 	 * Do nothing
 	 * @see org.qe4g.request.EventListener#afterEventProcessed(org.qe4g.request.Request, java.util.Collection<org.qe4g.request.Pattern.Evaluation>)
 	 */
-	public void afterEventProcessed(Request request, Collection<Evaluation> evaluations) {
+	public void afterEventProcessed(Request request, Collection<Path> paths) {
 		// DO NOTHING
 	}
 

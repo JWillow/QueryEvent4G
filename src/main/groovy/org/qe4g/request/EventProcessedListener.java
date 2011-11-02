@@ -3,7 +3,7 @@ package org.qe4g.request;
 import java.util.Collection;
 
 import org.qe4g.Event;
-import org.qe4g.request.Pattern.Evaluation;
+import org.qe4g.request.graph.Path;
 
 /**
  * <p>
@@ -31,5 +31,5 @@ public interface EventProcessedListener {
 	 *            - Request that handle the {@link Event}
 	 * @param evaluations
 	 */
-	void afterEventProcessed(Request request, Collection<Evaluation> evaluations);
+	void afterEventProcessed(Request request, Collection<Path> paths);
 }

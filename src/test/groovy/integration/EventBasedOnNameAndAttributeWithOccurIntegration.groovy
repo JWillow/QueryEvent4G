@@ -3,6 +3,8 @@ package integration
 import org.qe4g.Event
 import org.qe4g.request.RequestDispatcher
 import org.qe4g.request.dsl.GRequestEngineBuilder
+
+import spock.lang.AutoCleanup;
 import spock.lang.Specification;
 import groovy.lang.IntRange
 
@@ -14,6 +16,8 @@ class EventBasedOnNameAndAttributeWithOccurIntegration extends Specification {
 	def eventC = new Event(names:["C"],attributes:[test:"C"])
 
 	def gRequestEngineBuilder = new GRequestEngineBuilder();
+	
+	@AutoCleanup("shutdown")
 	def requestEngine;
 
 	def patternDetected = 0;
@@ -48,60 +52,84 @@ class EventBasedOnNameAndAttributeWithOccurIntegration extends Specification {
 		}
 	}
 
-	def "Simple case, we define a pattern on two named event and attribute criteria with occurs criteria. Positive evaluation"() {
-		setup:
-		definedPatternBasedOnNamedEventAndAttributeValueWithOccurs({true},eventA, 2..3)
-		when:
-		requestEngine.onEvent eventA
-		requestEngine.onEvent eventA
-		requestEngine.onEvent eventB
-		then :
-		patternDetected == 1
-	}
-
-	def "Simple case, we define a pattern on two named event and attribute criteria with occurs criteria on first Event. Positive evaluation, test max limit"() {
-		setup:
-		definedPatternBasedOnNamedEventAndAttributeValueWithOccurs({true},eventA, 2..3)
-		when:
-		requestEngine.onEvent eventA
-		requestEngine.onEvent eventA
-		requestEngine.onEvent eventA
-		requestEngine.onEvent eventB
-		then :
-		patternDetected == 1
-	}
-
 	def "Simple case, we define a pattern on two named event and attribute criteria with occurs criteria on second Event. Positive evaluation, test max limit"() {
 		setup:
 		definedPatternBasedOnNamedEventAndAttributeValueWithOccurs({true},eventB, 2..3)
 		when:
+		// FAILED
+		requestEngine.onEvent eventA
+		requestEngine.onEvent eventB
+		// OK
 		requestEngine.onEvent eventA
 		requestEngine.onEvent eventB
 		requestEngine.onEvent eventB
-//		requestEngine.onEvent eventB
-//		requestEngine.onEvent eventA
-//		requestEngine.onEvent eventB
-//		requestEngine.onEvent eventB
+		// OK
+		requestEngine.onEvent eventA
+		requestEngine.onEvent eventB
+		requestEngine.onEvent eventB
+		requestEngine.onEvent eventB
+		// FAILED
+		requestEngine.onEvent eventB
+		requestEngine.onEvent eventA
+		requestEngine.onEvent eventB
 		then :
-		patternDetected == 1
+		patternDetected == 2
 	}
 			
 	def "Simple case, we define a pattern on two named event and attribute criteria with occurs criteria. Negative evaluation"() {
 		setup:
 		definedPatternBasedOnNamedEventAndAttributeValueWithOccurs({true},eventA, 2..3)
 		when:
+		// FAILED
 		requestEngine.onEvent eventA
 		requestEngine.onEvent eventB
+		// OK
+		requestEngine.onEvent eventA
+		requestEngine.onEvent eventA
+		requestEngine.onEvent eventB
+		// FAILED
+		requestEngine.onEvent eventB
+		// OK
+		requestEngine.onEvent eventA
+		requestEngine.onEvent eventA
+		requestEngine.onEvent eventA
+		requestEngine.onEvent eventB
+		// FAILED
+		requestEngine.onEvent eventA
+		requestEngine.onEvent eventA
+		requestEngine.onEvent eventA
+		requestEngine.onEvent eventA
+		requestEngine.onEvent eventB
+		
 		then :
-		patternDetected == 0
+		patternDetected == 2
 	}
 	
 	def "Simple case, we define a pattern on two named event and attribute criteria with occurs criteria. Test optional event. Positive evaluation"() {
 		setup:
 		definedPatternBasedOnNamedEventAndAttributeValueWithOccurs({true},eventA, 0..3)
 		when:
+		// ---- OK
+		requestEngine.onEvent eventB
+		// ---- OK
+		requestEngine.onEvent eventA
+		requestEngine.onEvent eventB
+		// ---- OK
+		requestEngine.onEvent eventA
+		requestEngine.onEvent eventA
+		requestEngine.onEvent eventB
+		// ---- OK
+		requestEngine.onEvent eventA
+		requestEngine.onEvent eventA
+		requestEngine.onEvent eventA
+		requestEngine.onEvent eventB
+		// ---- OK because the first series of eventA is invalid, but the eventB alone is valid
+		requestEngine.onEvent eventA
+		requestEngine.onEvent eventA
+		requestEngine.onEvent eventA
+		requestEngine.onEvent eventA
 		requestEngine.onEvent eventB
 		then :
-		patternDetected == 1
+		patternDetected == 5
 	}
 }

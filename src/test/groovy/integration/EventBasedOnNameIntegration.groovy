@@ -2,6 +2,8 @@ package integration
 
 import org.qe4g.Event
 import org.qe4g.request.dsl.GRequestEngineBuilder
+
+import spock.lang.AutoCleanup;
 import spock.lang.Specification;
 
 class EventBasedOnNameIntegration extends Specification {
@@ -12,6 +14,8 @@ class EventBasedOnNameIntegration extends Specification {
 	def eventC = new Event(names:["C"],attributes:[test:"C"])
 
 	def gRequestEngineBuilder = new GRequestEngineBuilder();
+	
+	@AutoCleanup("shutdown")
 	def requestEngine;
 
 	def patternDetected = 0;
@@ -20,7 +24,7 @@ class EventBasedOnNameIntegration extends Specification {
 	
 	/**
 	* <pre>
-	* 	pattern(accept:accept) {
+	* 	pattern() {
 	*		event(name:'A')
 	*		event(name:'B')
 	*	}

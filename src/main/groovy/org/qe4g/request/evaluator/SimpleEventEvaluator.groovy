@@ -1,31 +1,33 @@
 package org.qe4g.request.evaluator
+import java.util.List
+import java.util.Map
 
-import org.qe4g.Event;
-import org.qe4g.request.Evaluator;
-import org.qe4g.request.Evaluator.Response;
+import org.qe4g.Event
+import org.qe4g.request.evaluation.Evaluator
+import org.qe4g.request.evaluation.Response;
+import org.neo4j.graphdb.Node
+import org.qe4g.request.evaluation.EvaluatorDefinition
+import static org.qe4g.request.evaluation.Response.*
 
 class SimpleEventEvaluator implements Evaluator {
 	def name
-	Map<Integer,Closure> linkOn = [:];
+	Map<Integer,Closure> linkOn = [:]
 	Map<String,Object> attributes = [:]
 	String id;
-	List<Closure> criterions
 	Range<Integer> occurs;
+	EvaluatorDefinition definition = null;
+	List<Closure> criterions = []
 	
-	public Response evaluate(Map<String,Object> context, List<Event> events) {
-		if(!evaluateOnLinkOnCriteria(context,events)) {
-			return Response.NOT_LINKED;
-		}
-
-		if(!evaluateOnNameAndAttributesAndCriterion(context, events)) {
-			if(occurs.contains(getCounter(context))) {
+	public Response on(Node node, Map context) {
+		if(!evaluateOnStaticCriteria(node)) {
+			if(occurs.contains(context.get("cpt_${id}",{0}))) {
 				return Response.CONTINUE_WITH_NEXT_EVALUATOR
 			} else {
 				return Response.KO
 			}
 		}
 
-		int checkCounter = getCounterAndIncrement(context)
+		int checkCounter = context.get("cpt_${id}",{0},{ return ++it})
 		if (checkCounter > occurs[occurs.size() - 1] ) {
 			return Response.KO;
 		} else if (checkCounter == occurs[occurs.size() - 1]) {
@@ -36,46 +38,24 @@ class SimpleEventEvaluator implements Evaluator {
 			return Response.OK_BUT_KEEP_ME
 		}
 	}
+
+	public boolean evaluateOnStaticCriteria(Event event) {
+		return _evaluateOnStaticCriteria(event.names, event.attributes)
+	}
 	
-	private boolean evaluateOnNameAndAttributesAndCriterion(Map<String,Object> context, List<Event> events) {
-		Event event = events[events.size() -1]
-		if(name != null && !event.names.contains(name)) {
+	private boolean evaluateOnStaticCriteria(Node node) {
+		return _evaluateOnStaticCriteria(node.names, node.getPublicProperties())
+	}
+
+	private boolean _evaluateOnStaticCriteria(List<String> names, Map properties) {
+		if(name != null && !names.any {it.equals(name)}) {
 			return false
 		}
 		if(attributes.size() != 0) {
-			boolean result = attributes.every { key, value ->
-				value == event.attributes[key]
-			}
-			if(!result) {
-				return false;
-			}
+			return attributes.every { key, value ->	value.equals(properties[key])}
 		}
-		return criterions.every {it(events)}
+		return true
 	}
-
-	private boolean evaluateOnLinkOnCriteria(Map<String,Object> context, List<Event> events) {
-		return linkOn.every {Integer key,Closure areLinked ->
-			if(key < 1) {
-				return areLinked(events[events.size() -1], events[events.size() -1])
-			}
-			return areLinked(events[events.size() -1], events[key])
-		}
-	}
-
-	private int getCounter(Map<String,Object> context) {
-		def counter = context[id]
-		if(counter == null) {
-			counter = 0
-		}
-		return counter
-	}
-
-	private int getCounterAndIncrement(Map<String,Object> context) {
-		int counter = getCounter(context)
-		context[id] = ++counter
-		return counter
-	}
-
 	// ------------
 	// BUILDER PART
 	// ------------
@@ -83,7 +63,7 @@ class SimpleEventEvaluator implements Evaluator {
 		return new Builder();
 	}
 	public static class Builder {
-		private Map<Integer,Closure> linkOn;
+		private Map<Integer,Closure> linkOn = [:];
 		private String event
 		private List<Closure> criterion = []
 		private Map<String,Object> attributes = [:]
@@ -142,6 +122,15 @@ class SimpleEventEvaluator implements Evaluator {
 			this.linkOn = linkOn;
 			return this
 		}
+
+		private EvaluatorDefinition getDefinition() {
+			EvaluatorDefinition definition = new EvaluatorDefinition()
+			definition.eventName = this.event
+			List currentAttributes = []
+			currentAttributes.addAll(this.attributes.keySet())
+			return definition
+		}
+
 		public SimpleEventEvaluator build() {
 			SimpleEventEvaluator evaluator = new SimpleEventEvaluator()
 			evaluator.id = this.id
@@ -154,6 +143,7 @@ class SimpleEventEvaluator implements Evaluator {
 			} else {
 				evaluator.occurs = this.range
 			}
+			evaluator.definition = getDefinition()
 			return evaluator
 		}
 	}

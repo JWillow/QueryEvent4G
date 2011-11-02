@@ -88,6 +88,19 @@ class LinkOnSpecification extends Specification{
 	}
 
 	/**
+	* <pre>linkOn:['and'['usedId','otherAttTest']]</pre>
+	* @return
+	*/
+   def "Two links are defined on the same event. We used the and keyword"() {
+	   setup:
+	   Map<Integer,Closure<?>> links = LinkOn.get("linkOn", ['and':['userId','otherAttTest']]);
+	   assert links.containsKey(0)
+	   expect:
+	   assert links[0].doCall(currentEvent,otherEvent) == false
+   }
+
+	
+	/**
 	 * <pre>linkOn:['or':['userId','otherAttTest'],'and':['extension']</pre>
 	 * @return
 	 */
@@ -157,8 +170,8 @@ class LinkOnSpecification extends Specification{
 	def "Link between the current event and the last event. The relation is implicite with two criteria. Negative evaluation"() {
 		setup:
 		Map<Integer,Closure<?>> links = LinkOn.get("linkOn", ['userId', 'otherAttTest']);
-		assert links.containsKey(0)
 		expect:
+		assert links.containsKey(0)
 		assert links[0].doCall(currentEvent,otherEvent) == false
 	}
 
@@ -310,5 +323,5 @@ class LinkOnSpecification extends Specification{
 	  assert links[1].doCall(currentEvent,otherEvent)
 	  assert links[3].doCall(currentEvent,otherEvent)
   }
-
+  
 }
