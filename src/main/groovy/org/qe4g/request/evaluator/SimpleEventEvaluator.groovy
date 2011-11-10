@@ -5,8 +5,11 @@ import java.util.Map
 import org.qe4g.Event
 import org.qe4g.request.evaluation.Evaluator
 import org.qe4g.request.evaluation.Response;
-import org.neo4j.graphdb.Node
 import org.qe4g.request.evaluation.EvaluatorDefinition
+
+import com.tinkerpop.blueprints.pgm.Edge;
+import com.tinkerpop.blueprints.pgm.Vertex;
+
 import static org.qe4g.request.evaluation.Response.*
 
 class SimpleEventEvaluator implements Evaluator {
@@ -17,17 +20,31 @@ class SimpleEventEvaluator implements Evaluator {
 	Range<Integer> occurs;
 	EvaluatorDefinition definition = null;
 	List<Closure> criterions = []
-	
-	public Response on(Node node, Map context) {
-		if(!evaluateOnStaticCriteria(node)) {
-			if(occurs.contains(context.get("cpt_${id}",{0}))) {
+
+	private boolean checkLink(Vertex cVertex, Vertex eventVertex) {
+		def events = cVertex.getOutEdges().collect{it}.sort {it.order}.collect { Edge edge -> edge.getOutVertex().event }
+		return linkOn.every {index,control ->
+			control(eventVertex.event, events[index])
+		}
+	}
+
+	public Response on(Vertex eventVertex, Vertex cVertex) {
+		boolean linked = checkLink(cVertex,eventVertex)
+		if(!evaluateOnStaticCriteria(eventVertex.event)) {
+			if(occurs.contains(cVertex.context.get("cpt_${id}",{0}))) {
 				return Response.CONTINUE_WITH_NEXT_EVALUATOR
 			} else {
-				return Response.KO
+				if(linked) {
+					return Response.KO
+				} else {
+					return Response.NOT_SAME_SET
+				}
 			}
 		}
-
-		int checkCounter = context.get("cpt_${id}",{0},{ return ++it})
+		if(!linked) {
+			return Response.NOT_SAME_SET
+		}
+		int checkCounter = cVertex.context.get("cpt_${id}",{0},{ return ++it})
 		if (checkCounter > occurs[occurs.size() - 1] ) {
 			return Response.KO;
 		} else if (checkCounter == occurs[occurs.size() - 1]) {
@@ -41,10 +58,6 @@ class SimpleEventEvaluator implements Evaluator {
 
 	public boolean evaluateOnStaticCriteria(Event event) {
 		return _evaluateOnStaticCriteria(event.names, event.attributes)
-	}
-	
-	private boolean evaluateOnStaticCriteria(Node node) {
-		return _evaluateOnStaticCriteria(node.names, node.getPublicProperties())
 	}
 
 	private boolean _evaluateOnStaticCriteria(List<String> names, Map properties) {
@@ -123,14 +136,6 @@ class SimpleEventEvaluator implements Evaluator {
 			return this
 		}
 
-		private EvaluatorDefinition getDefinition() {
-			EvaluatorDefinition definition = new EvaluatorDefinition()
-			definition.eventName = this.event
-			List currentAttributes = []
-			currentAttributes.addAll(this.attributes.keySet())
-			return definition
-		}
-
 		public SimpleEventEvaluator build() {
 			SimpleEventEvaluator evaluator = new SimpleEventEvaluator()
 			evaluator.id = this.id
@@ -143,7 +148,6 @@ class SimpleEventEvaluator implements Evaluator {
 			} else {
 				evaluator.occurs = this.range
 			}
-			evaluator.definition = getDefinition()
 			return evaluator
 		}
 	}

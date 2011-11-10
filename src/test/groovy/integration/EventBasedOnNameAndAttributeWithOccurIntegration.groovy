@@ -16,12 +16,12 @@ class EventBasedOnNameAndAttributeWithOccurIntegration extends Specification {
 	def eventC = new Event(names:["C"],attributes:[test:"C"])
 
 	def gRequestEngineBuilder = new GRequestEngineBuilder();
-	
+
 	@AutoCleanup("shutdown")
 	def requestEngine;
 
 	def patternDetected = 0;
-	def controlClosure = {context,event -> patternDetected++}
+	def controlClosure = {context,events ->  patternDetected++ }
 
 
 	/**
@@ -51,6 +51,31 @@ class EventBasedOnNameAndAttributeWithOccurIntegration extends Specification {
 			}
 		}
 	}
+	def "Simple case with 2..3 constraint for first event in pattern"() {
+		setup:
+		definedPatternBasedOnNamedEventAndAttributeValueWithOccurs({true},eventA, 2..3)
+		when:
+		// OK
+		requestEngine.onEvent eventA
+		requestEngine.onEvent eventA
+		requestEngine.onEvent eventB
+		then :
+		patternDetected == 1
+	}
+	
+	def "Simple case with 2..3 constraint for second event in pattern"() {
+		setup:
+		definedPatternBasedOnNamedEventAndAttributeValueWithOccurs({true},eventB, 2..3)
+		when:
+		// OK
+		requestEngine.onEvent eventA
+		requestEngine.onEvent eventB
+		requestEngine.onEvent eventB
+		then :
+		patternDetected == 1
+	}
+
+
 
 	def "Simple case, we define a pattern on two named event and attribute criteria with occurs criteria on second Event. Positive evaluation, test max limit"() {
 		setup:
@@ -75,7 +100,7 @@ class EventBasedOnNameAndAttributeWithOccurIntegration extends Specification {
 		then :
 		patternDetected == 2
 	}
-			
+
 	def "Simple case, we define a pattern on two named event and attribute criteria with occurs criteria. Negative evaluation"() {
 		setup:
 		definedPatternBasedOnNamedEventAndAttributeValueWithOccurs({true},eventA, 2..3)
@@ -100,11 +125,11 @@ class EventBasedOnNameAndAttributeWithOccurIntegration extends Specification {
 		requestEngine.onEvent eventA
 		requestEngine.onEvent eventA
 		requestEngine.onEvent eventB
-		
+
 		then :
 		patternDetected == 2
 	}
-	
+
 	def "Simple case, we define a pattern on two named event and attribute criteria with occurs criteria. Test optional event. Positive evaluation"() {
 		setup:
 		definedPatternBasedOnNamedEventAndAttributeValueWithOccurs({true},eventA, 0..3)

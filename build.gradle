@@ -3,12 +3,13 @@ apply plugin: 'groovy'
 apply plugin: 'maven'
 
 repositories {
-	mavenCentral()
+	mavenCentral name: 'tinkerpop-repository', artifactUrls: ["http://tinkerpop.com/maven2"]
+	mavenCentral name: 'ibiblio', artifactUrls:['http://mirrors.ibiblio.org/pub/mirrors/maven']
 }
-
 dependencies {
 	groovy group: 'org.codehaus.groovy', name: 'groovy-all', version: '1.8.0'
-	compile group: 'org.neo4j', name: 'neo4j', version: '1.5.M02'
+	compile group:'ch.qos.logback', name:'logback-core',version:'0.9.30'
+	//compile group: 'com.tinkerpop.blueprints', name: 'blueprints-core', version: '1.0'
 	testCompile group: 'junit', name: 'junit', version: '4.8.2'
 	testCompile("org.spockframework:spock-core:0.5-groovy-1.8") {
 		exclude module: 'groovy-all'

@@ -1,31 +1,25 @@
 package org.qe4g.request.pattern
 
+import static org.qe4g.request.evaluation.Response.*
+import static org.qe4g.request.graph.EdgeTypes.*
+import static org.qe4g.request.graph.MyGraph.*
 import groovy.lang.Closure
 
 import java.util.List
 import java.util.concurrent.CopyOnWriteArrayList
 
-import org.qe4g.Event
+import org.qe4g.Event;
 import org.qe4g.request.evaluation.Evaluator
-import org.qe4g.request.evaluation.EventIdentity;
-import org.qe4g.request.evaluation.Response;
-import org.qe4g.request.graph.Path;
-import org.qe4g.request.graph.RelTypes;
-import org.qe4g.request.graph.Traverser;
-import org.qe4g.request.pattern.ContextualPathEvaluator.State
-import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.Node
-import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.ReturnableEvaluator;
-import org.neo4j.graphdb.StopEvaluator;
-import org.neo4j.graphdb.TraversalPosition;
-import org.neo4j.graphdb.traversal.Evaluation;
-import org.neo4j.graphdb.traversal.TraversalDescription;
+import org.qe4g.request.evaluation.Response
+import org.qe4g.request.graph.Path
+import org.qe4g.request.graph.VertexTypes
 
-import static org.neo4j.graphdb.Direction.*;
-import static org.qe4g.request.pattern.ContextualPathEvaluator.State.*
+import com.tinkerpop.blueprints.pgm.Edge
+import com.tinkerpop.blueprints.pgm.Vertex
 
 class Pattern {
+
+	private Vertex vContextualEvaluators;
 
 	List<Evaluator> evaluators
 
@@ -35,12 +29,42 @@ class Pattern {
 	 */
 	def accept = { true }
 
-	public Collection<Path> correlate(Node nodeEvent) {
-		Traverser traverser = new Traverser(evaluators:evaluators)
-		traverser.traverse(nodeEvent)
-		return traverser.getSelectedPath()
+	public Collection<List<Event>> correlate(Vertex eventVertex) {
+		def results = []
+		for(Edge edgeEvaluation:vContextualEvaluators.getInEdges(REGISTER_TO.name())) {
+			def cVertex = edgeEvaluation.getOutVertex()
+			on(cVertex,eventVertex)
+			if(cVertex.completed == true) {
+				// CREATE PATH
+				results << cVertex.getInEdges().collect{it}.sort {it.order}.collect { Edge edge ->
+					edge.getOutVertex().event }
+				graph().removeVertex(cVertex)
+			}
+		}
+		if(results.isEmpty() && !eventVertex.hasInEdges(EVALUATION.name())) {
+			Vertex cVertex = graph().addVertex(null)
+			cVertex.context = [:]
+			cVertex.completed = false
+			cVertex.indexNextEvaluatorToUse = 0
+			on(cVertex,eventVertex)
+			if(eventVertex.hasInEdges(EVALUATION.name())) {
+				graph().addEdge(null, cVertex, vContextualEvaluators, REGISTER_TO.name())
+			} else {
+				graph().removeVertex(cVertex)
+			}
+		}
+		return results
 	}
-	
+
+	public void on(Vertex cVertex, Vertex eventVertex) {
+		int index = cVertex['indexNextEvaluatorToUse']
+		Response response = evaluators[index].on(eventVertex, cVertex)
+		response.digest(evaluators, cVertex,eventVertex)
+		if(response.equals(Response.CONTINUE_WITH_NEXT_EVALUATOR) && cVertex.completed == false) {
+			on(cVertex, eventVertex)
+		}
+	}
+
 	// ------------
 	// BUILDER PART
 	// ------------
@@ -55,12 +79,9 @@ class Pattern {
 
 		private Closure accept = null;
 		private List<Evaluator> evaluators = [];
-		private Collection eventIdentities = [];
-		//private EventIdentitiesBuilder eib = EventIdentitiesBuilder.builder();
 
 		public Builder addEvaluator(Evaluator evaluator) {
 			evaluators << evaluator;
-			//eib.extractAttributeUsed(evaluator);
 			return this;
 		}
 
@@ -74,8 +95,9 @@ class Pattern {
 			if(accept != null) {
 				pattern.accept = this.accept;
 			}
-			pattern.evaluators = new CopyOnWriteArrayList(evaluators.reverse());
-			//pattern.eventIdentities = eib.giveMeEventIdentities()
+			pattern.evaluators = new CopyOnWriteArrayList(evaluators);
+			pattern.vContextualEvaluators = graph().addVertex(VertexTypes.INDEX_CONTEXTUAL_EVALUATOR.name() + "@" + this)
+			pattern.vContextualEvaluators.setProperty('type',VertexTypes.INDEX_CONTEXTUAL_EVALUATOR)
 			return pattern;
 		}
 	}

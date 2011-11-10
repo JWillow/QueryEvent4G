@@ -1,11 +1,10 @@
 package org.qe4g.request.evaluation;
 
 
-import java.util.Map;
-
-import org.neo4j.graphdb.Node;
 import org.qe4g.Event;
 import org.qe4g.request.Request;
+
+import com.tinkerpop.blueprints.pgm.Vertex;
 
 /**
  * <p>
@@ -24,6 +23,6 @@ public interface Evaluator {
 	 */
 	boolean evaluateOnStaticCriteria(Event event);
 	
-	Response on(Node event, Map context);
+	Response on(Vertex event, Vertex cVertex);
 	
 }

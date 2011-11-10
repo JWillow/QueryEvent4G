@@ -1,10 +1,12 @@
 package org.qe4g.request
 
 import java.util.List
-import org.neo4j.graphdb.Node
+
 import org.qe4g.Event
-import org.qe4g.request.graph.Path;
+import org.qe4g.request.graph.Path
 import org.qe4g.request.pattern.Pattern
+
+import com.tinkerpop.blueprints.pgm.Vertex
 
 /**
  * <p>Represent a Request based on pattern detection ({@link Evaluator}) and apply {@link Function} when the detection occurs.
@@ -81,10 +83,10 @@ class Request {
 	 * </ul>
 	 * @param event
 	 */
-	void onNodeEvent(Node node) {
-		Collection<Path> paths = pattern.correlate(node)
-		paths.each { Path path ->
-			functions.each {it.onPatternDetection(this, path)}
+	void onNodeEvent(Vertex eventVertex) {
+		Collection<List<Event>> result = pattern.correlate(eventVertex)
+		result.each { List<Event> events ->
+			functions.each {it.onPatternDetection(this, events)}
 		}
 	}
 

@@ -1,22 +1,23 @@
 package org.qe4g.request
 
-import org.neo4j.graphdb.GraphDatabaseService
-import org.neo4j.graphdb.PropertyContainer;
-import org.neo4j.graphdb.Transaction
-import org.neo4j.kernel.EmbeddedGraphDatabase
+import static org.qe4g.request.graph.EventNodes.*
+
 import org.qe4g.Event
-import org.neo4j.graphdb.Node
-import org.neo4j.graphdb.Relationship
-import static org.qe4g.request.graph.RelTypes.*;
-import static org.qe4g.request.graph.EventNodes.*;
+
+import com.tinkerpop.blueprints.pgm.Edge;
+import com.tinkerpop.blueprints.pgm.Graph
+import com.tinkerpop.blueprints.pgm.Vertex
+import com.tinkerpop.blueprints.pgm.impls.tg.TinkerGraph
+
+import static org.qe4g.request.graph.EdgeTypes.*;
+import static org.qe4g.request.graph.MyGraph.*;
 
 class RequestDispatcher {
 
 	private List<Request> requests;
-	private GraphDatabaseService graphDb
-	private Collection<Node> nodes = [];
+	private Collection<Vertex> vertices = [];
 
-	private Node predecessor = null;
+	private Vertex predecessor = null;
 
 	public void onEvent(Event event) {
 		if(!event.isInconsistent()) {
@@ -25,62 +26,53 @@ class RequestDispatcher {
 			if(selectedRequests.isEmpty()) {
 				return
 			}
-			Transaction tx = graphDb.beginTx();
-			Node currentNode = null;
-			try {
-				currentNode = createNodeFrom(graphDb, event)
-				handleAncestrorByTimeRelationship(currentNode)
-				handleAncestrorByTypeRelationship(currentNode)
-				handleLinkedByPropertiesRelationship(currentNode)
-				tx.success();
-			} finally {
-				tx.finish();
-			}
-			if(currentNode) {
-				selectedRequests.each { Request request -> request.onNodeEvent(currentNode) }
-			}
+			Vertex currentVertex = createFrom(event)
+			handleAncestrorByTimeRelationship(currentVertex)
+			//handleAncestrorByTypeRelationship(currentVertex)
+			//handleLinkedByPropertiesRelationship(currentVertex)
+			selectedRequests.each { Request request -> request.onNodeEvent(currentVertex) }
+			//currentVertex.getInEdges(EVALUATION.name()).
 		}
 	}
 
-	private void handleLinkedByPropertiesRelationship(Node node) {
-		nodes.each { Node tmpNode ->
+	private void handleLinkedByPropertiesRelationship(Vertex vertex) {
+		Event event = vertex.event
+		vertices.each { Vertex tmpVertex ->
+			if(tmpVertex.getId().equals(vertex.getId())) {
+				return
+			}
 			def sharedProperties = []
-			tmpNode.getPropertyKeys().each { String key ->
-				if(!isPublicProperty(key)) {
-					return
-				}
-				if(node.getProperty(key,null) == tmpNode.getProperty(key)) {
+			tmpVertex.event.attributes.each { String key, value ->
+				if(event.attributes[key] == value) {
 					sharedProperties << key
 				}
 			}
 			if(sharedProperties.isEmpty()) {
 				return
 			}
-			Relationship relationship = node.createRelationshipTo(tmpNode, LINKED_BY_PROPERTIES);
-			relationship.setProperty("attached", sharedProperties.toArray(new String[sharedProperties.size()]))
+			graph().addEdge(null, vertex, tmpVertex, LINKED_BY_PROPERTIES.name());
 		}
 	}
 
-	private void handleAncestrorByTypeRelationship(Node node) {
-		Node ancestror = nodes.find { Node tmpNode -> areEquals(tmpNode,node) }
+	private void handleAncestrorByTypeRelationship(Vertex vertex) {
+		Vertex ancestror = vertices.find { Vertex tmpVertex -> areEquals(vertex,tmpVertex) }
 		if(ancestror) {
-			node.createRelationshipTo(ancestror, ANCESTROR_BY_TYPE)
-			nodes.remove(ancestror)
+			graph().addEdge(null, vertex, ancestror, ANCESTROR_BY_TIME.name());
+			vertices.remove(ancestror)
 		}
-		nodes.add(node);
+		vertices.add(vertex);
 	}
 
-	private void handleAncestrorByTimeRelationship(Node node) {
+	private void handleAncestrorByTimeRelationship(Vertex vertex) {
 		if(predecessor != null) {
-			node.createRelationshipTo(predecessor, ANCESTROR_BY_TIME)
+			Edge edge = graph().addEdge(null, vertex, predecessor, ANCESTROR_BY_TIME.name());
 		}
-		predecessor = node;
+		predecessor = vertex;
 	}
 
 
 	public void shutdown() {
 		requests*.get()
-		graphDb.shutdown();
 	}
 
 
@@ -114,7 +106,6 @@ class RequestDispatcher {
 		public RequestDispatcher build() {
 			RequestDispatcher engine = new RequestDispatcher()
 			engine.requests = this.requestEngines;
-			engine.graphDb = new EmbeddedGraphDatabase("/c:/dev/datas/graphdata");
 			registerShutdownHook(engine)
 			return engine
 		}

@@ -1,6 +1,8 @@
 package org.qe4g.request;
 
-import org.qe4g.request.graph.Path;
+import java.util.List;
+
+import org.qe4g.Event;
 
 /**
  * <p>
@@ -18,7 +20,7 @@ public interface Function {
 	 *            Liste des événements correspondant au pattern lors de la
 	 *            détection
 	 */
-	void onPatternDetection(Request request, Path path);
+	void onPatternDetection(Request request, List<Event> events);
 
 	/**
 	 * Demand to {@link Function} to produce a result if {@link Function}

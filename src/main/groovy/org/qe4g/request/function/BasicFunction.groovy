@@ -12,8 +12,8 @@ class BasicFunction implements Function {
 	Core core;
 	Map<Object,Object> context = [:];
 
-	void onPatternDetection(Request request, Path path) {
-		core.onPatternDetection(context,path)
+	void onPatternDetection(Request request, List<Event> events) {
+		core.onPatternDetection(context,events)
 	}
 
 	void get(long at) {
