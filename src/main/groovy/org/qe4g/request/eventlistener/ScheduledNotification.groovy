@@ -3,11 +3,8 @@ package org.qe4g.request.eventlistener
 import java.util.List
 
 import org.qe4g.Event
-import org.qe4g.request.EventProcessedListener
 import org.qe4g.request.Function
-import org.qe4g.request.Functions
 import org.qe4g.request.Request
-import org.qe4g.request.graph.Path;
 
 class ScheduledNotification {//implements EventProcessedListener, Functions {
 
@@ -45,7 +42,7 @@ class ScheduledNotification {//implements EventProcessedListener, Functions {
 	 * Do nothing
 	 * @see org.qe4g.request.EventListener#afterEventProcessed(org.qe4g.request.Request, java.util.Collection<org.qe4g.request.Pattern.Evaluation>)
 	 */
-	public void afterEventProcessed(Request request, Collection<Path> paths) {
+	public void afterEventProcessed(Request request, List events) {
 		// DO NOTHING
 	}
 

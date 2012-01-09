@@ -4,15 +4,22 @@ import java.util.Map
 
 import org.qe4g.Event
 import org.qe4g.request.evaluation.Evaluator
-import org.qe4g.request.evaluation.Response;
+import org.qe4g.request.evaluation.OccurResponse;
 import org.qe4g.request.evaluation.EvaluatorDefinition
+import org.qe4g.request.evaluation.Evaluator.Type
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.tinkerpop.blueprints.pgm.Edge;
 import com.tinkerpop.blueprints.pgm.Vertex;
 
-import static org.qe4g.request.evaluation.Response.*
+import static org.qe4g.request.graph.EdgeTypes.*
+import static org.qe4g.request.evaluation.OccurResponse.*
+import static org.qe4g.request.evaluation.Evaluator.Type.*;
 
 class SimpleEventEvaluator implements Evaluator {
+	final static Logger logger = LoggerFactory.getLogger(SimpleEventEvaluator.class);
+
 	def name
 	Map<Integer,Closure> linkOn = [:]
 	Map<String,Object> attributes = [:]
@@ -21,43 +28,49 @@ class SimpleEventEvaluator implements Evaluator {
 	EvaluatorDefinition definition = null;
 	List<Closure> criterions = []
 
-	private boolean checkLink(Vertex cVertex, Vertex eventVertex) {
-		def events = cVertex.getOutEdges().collect{it}.sort {it.order}.collect { Edge edge -> edge.getOutVertex().event }
-		return linkOn.every {index,control ->
-			control(eventVertex.event, events[index])
+	public Type getType() {
+		if(linkOn.empty) {
+			return SINGLE;
 		}
+		return LINKED;
 	}
 
-	public Response on(Vertex eventVertex, Vertex cVertex) {
-		boolean linked = checkLink(cVertex,eventVertex)
-		if(!evaluateOnStaticCriteria(eventVertex.event)) {
-			if(occurs.contains(cVertex.context.get("cpt_${id}",{0}))) {
-				return Response.CONTINUE_WITH_NEXT_EVALUATOR
-			} else {
-				if(linked) {
-					return Response.KO
-				} else {
-					return Response.NOT_SAME_SET
-				}
-			}
+	public boolean isOptional() {
+		return occurs[0] == 0
+	}
+
+	public boolean evaluateRelationship(Vertex vEvaluationContext, Vertex vEvent) {
+		logger.debug("evaluateRelationship {}/{}", vEvaluationContext, vEvent);
+		List<Event> events = ((0 % vEvaluationContext >> PREVIOUS) + vEvaluationContext).collect {Vertex vEvalContext ->
+			(1 % vEvalContext >> EVALUATED)[0].event
 		}
-		if(!linked) {
-			return Response.NOT_SAME_SET
+		if(events.size() < linkOn.size()) {
+			return false;
 		}
-		int checkCounter = cVertex.context.get("cpt_${id}",{0},{ return ++it})
-		if (checkCounter > occurs[occurs.size() - 1] ) {
-			return Response.KO;
-		} else if (checkCounter == occurs[occurs.size() - 1]) {
-			return Response.OK
-		} else if (checkCounter < occurs[0]){
-			return Response.KO_BUT_KEEP_ME
+		boolean result =  linkOn.every {index,control ->
+			control(vEvent.event, events[index])
+		}
+
+		logger.debug("evaluateRelationship {}", result);
+		return result;
+	}
+
+	public OccurResponse evaluateOnOccurrenceCriteria(Vertex vEvaluationContext, Vertex vEvent) {
+		OccurResponse response = null
+		vEvaluationContext.occur ++;
+		if (vEvaluationContext.occur == occurs[occurs.size() - 1]) {
+			response = OccurResponse.OK
+		} else if (vEvaluationContext.occur < occurs[0]){
+			response = OccurResponse.KO_BUT_KEEP_ME
 		} else {
-			return Response.OK_BUT_KEEP_ME
+			response = OccurResponse.OK_BUT_KEEP_ME
 		}
+		vEvaluationContext.state = response
+		return response
 	}
 
-	public boolean evaluateOnStaticCriteria(Event event) {
-		return _evaluateOnStaticCriteria(event.names, event.attributes)
+	public boolean evaluateOnStaticCriteria(Vertex vertextEvent) {
+		return _evaluateOnStaticCriteria(vertextEvent.event.names, vertextEvent.event.attributes)
 	}
 
 	private boolean _evaluateOnStaticCriteria(List<String> names, Map properties) {

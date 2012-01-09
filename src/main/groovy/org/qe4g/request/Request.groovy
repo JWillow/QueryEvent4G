@@ -3,10 +3,13 @@ package org.qe4g.request
 import java.util.List
 
 import org.qe4g.Event
-import org.qe4g.request.graph.Path
 import org.qe4g.request.pattern.Pattern
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.tinkerpop.blueprints.pgm.Vertex
+import static org.qe4g.request.graph.EdgeTypes.*
+import static org.qe4g.request.graph.VertexTypes.*
 
 /**
  * <p>Represent a Request based on pattern detection ({@link Evaluator}) and apply {@link Function} when the detection occurs.
@@ -46,6 +49,8 @@ import com.tinkerpop.blueprints.pgm.Vertex
  */
 class Request {
 
+	final static Logger logger = LoggerFactory.getLogger(Request.class);
+	
 	List<EventProcessedListener> eventListeners;
 
 	String description
@@ -73,6 +78,12 @@ class Request {
 		return pattern.accept(event)
 	}
 
+	private Comparator<Event> timeBasedComparator = new Comparator<Event>() {
+		public int compare(Event ev1, Event ev2) {
+			return ev1.triggeredTime - ev2.triggeredTime;
+		}
+	};
+
 	/**
 	 * Perform one {@link Event}.
 	 * <ul>
@@ -83,9 +94,31 @@ class Request {
 	 * </ul>
 	 * @param event
 	 */
-	void onNodeEvent(Vertex eventVertex) {
-		Collection<List<Event>> result = pattern.correlate(eventVertex)
-		result.each { List<Event> events ->
+	void onNodeEvent(Vertex vEvent) {
+		Collection<Vertex> vPaths = pattern.correlate(vEvent)
+		vPaths.each { Vertex vPath ->
+			// Evaluation Context Collect
+			List<Vertex> vEvaluationContexts = [];
+			vEvaluationContexts << (1 % vPath >> CURRENT_EVAL_CONTEXT).unique();
+			vEvaluationContexts + (0 % vEvaluationContexts[0] >> PREVIOUS);
+			vEvaluationContexts + (0 % vEvaluationContexts[0] << PREVIOUS);
+			// Event Vertex Collect
+			List<Vertex> vEvents = [];
+			vEvaluationContexts.each {Vertex vEvaluationContext ->
+				vEvents + (1 % vEvaluationContext >> EVALUATED);
+				logger.debugG("Delete Evaluation Context : {}", vEvaluationContext);
+				vEvaluationContext--;
+			}
+			logger.debugG("Delete Path : {}", vPath);
+			vPath --
+			logger.debugG("Events collected : {}", vEvents);
+			vEvents.findAll{(1 % it << EVALUATED).empty && (1 % it >> ATTACHED).empty}
+			.each{logger.debugG("Delete Event {}",it); it--};
+
+			// Event Collect
+			List<Event> events = vEvents.collect {it.event}
+			Collections.sort(events, timeBasedComparator);
+			logger.debugG("Events collected : {}", events);
 			functions.each {it.onPatternDetection(this, events)}
 		}
 	}

@@ -9,6 +9,7 @@ import spock.lang.Specification;
 class EventBasedOnNameIntegration extends Specification {
 
 	def eventA = new Event(names:["A"],attributes:[userId:"01", test:"A"])
+	def eventABis = new Event(names:["A"],attributes:[userId:"02", test:"A"])
 	def eventB = new Event(names:["B"],attributes:[userId:"01", test:"B"])
 	def eventBBis = new Event(names:["B"],attributes:[userId:"01",test:"BBis"])
 	def eventC = new Event(names:["C"],attributes:[test:"C"])
@@ -67,7 +68,7 @@ class EventBasedOnNameIntegration extends Specification {
 	   definedPatternBasedOnNamedEvent()
 	   when:
 	   requestEngine.onEvent eventA
-	   requestEngine.onEvent eventA
+	   requestEngine.onEvent eventABis
 	   requestEngine.onEvent eventB
 	   then :
 	   patternDetected == 1

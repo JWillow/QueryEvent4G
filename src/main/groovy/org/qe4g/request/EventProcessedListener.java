@@ -1,9 +1,9 @@
 package org.qe4g.request;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.qe4g.Event;
-import org.qe4g.request.graph.Path;
 
 /**
  * <p>
@@ -31,5 +31,5 @@ public interface EventProcessedListener {
 	 *            - Request that handle the {@link Event}
 	 * @param evaluations
 	 */
-	void afterEventProcessed(Request request, Collection<Path> paths);
+	void afterEventProcessed(Request request, List<Event> events);
 }

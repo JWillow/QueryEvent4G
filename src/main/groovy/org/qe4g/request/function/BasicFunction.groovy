@@ -5,7 +5,6 @@ import java.util.List
 import org.qe4g.Event
 import org.qe4g.request.Function
 import org.qe4g.request.Request
-import org.qe4g.request.graph.Path;
 
 class BasicFunction implements Function {
 	Notifier notification;

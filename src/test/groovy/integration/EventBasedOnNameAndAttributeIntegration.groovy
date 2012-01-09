@@ -10,8 +10,8 @@ import spock.lang.Specification;
 
 class EventBasedOnNameAndAttributeIntegration extends Specification {
 
-	def eventA = new Event(names:["A"],attributes:[userId:"01", test:"A"])
-	def eventB = new Event(names:["B"],attributes:[userId:"01", test:"B"])
+	def eventA = new Event(names:["A"],attributes:[userId:"01", test:"A"],triggeredTime:10)
+	def eventB = new Event(names:["B"],attributes:[userId:"01", test:"B"],triggeredTime:12)
 	def eventBBis = new Event(names:["B"],attributes:[userId:"01",test:"BBis"])
 	def eventC = new Event(names:["C"],attributes:[test:"C"])
 
@@ -23,7 +23,6 @@ class EventBasedOnNameAndAttributeIntegration extends Specification {
 	def patternDetected = 0;
 	def controlClosure = {context,path -> 
 		patternDetected++
-		println path
 	}
 
 	/**

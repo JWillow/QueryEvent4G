@@ -1,7 +1,6 @@
 package org.qe4g.request.evaluation;
 
-
-import org.qe4g.Event;
+import org.qe4g.Event; 
 import org.qe4g.request.Request;
 
 import com.tinkerpop.blueprints.pgm.Vertex;
@@ -16,13 +15,20 @@ import com.tinkerpop.blueprints.pgm.Vertex;
  */
 public interface Evaluator {
 
+	enum Type {SINGLE,LINKED,GLOBAL};
+	
+	Type getType();
+	
+	boolean isOptional();
+	
+	boolean evaluateRelationship(Vertex vPath, Vertex vEvent);
+	
 	/**
 	 * @param events
 	 *            - order by arriving order inside the {@link Request}
 	 * @return
 	 */
-	boolean evaluateOnStaticCriteria(Event event);
-	
-	Response on(Vertex event, Vertex cVertex);
-	
+	boolean evaluateOnStaticCriteria(Vertex vEvent);
+
+	OccurResponse evaluateOnOccurrenceCriteria(Vertex vPath, Vertex vEvent);
 }
