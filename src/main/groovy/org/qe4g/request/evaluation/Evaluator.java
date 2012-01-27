@@ -15,10 +15,6 @@ import com.tinkerpop.blueprints.pgm.Vertex;
  */
 public interface Evaluator {
 
-	enum Type {SINGLE,LINKED,GLOBAL};
-	
-	Type getType();
-	
 	boolean isOptional();
 	
 	boolean evaluateRelationship(Vertex vPath, Vertex vEvent);

@@ -10,8 +10,8 @@ import spock.lang.Specification;
 
 class EventBasedOnNameAndAttributeIntegration extends Specification {
 
-	def eventA = new Event(names:["A"],attributes:[userId:"01", test:"A"],triggeredTime:10)
-	def eventB = new Event(names:["B"],attributes:[userId:"01", test:"B"],triggeredTime:12)
+	def eventA = new Event(names:["A"],attributes:[userId:"01", test:"A"])
+	def eventB = new Event(names:["B"],attributes:[userId:"01", test:"B"])
 	def eventBBis = new Event(names:["B"],attributes:[userId:"01",test:"BBis"])
 	def eventC = new Event(names:["C"],attributes:[test:"C"])
 
@@ -95,13 +95,13 @@ class EventBasedOnNameAndAttributeIntegration extends Specification {
 		setup:
 		definedPatternBasedOnNamedEventAndAttributeValue({event -> !Collections.disjoint(['A', 'B'],(event.names))})
 		when:
-		requestEngine.onEvent eventA
-		requestEngine.onEvent eventC
-		requestEngine.onEvent eventB
-		requestEngine.onEvent eventB
-		requestEngine.onEvent eventA
-		requestEngine.onEvent eventB
-		requestEngine.onEvent eventC
+		requestEngine.onEvent eventA // Path1
+		requestEngine.onEvent eventC // Ignored
+		requestEngine.onEvent eventB // Path1 - SUCCESS
+		requestEngine.onEvent eventB // Perturb
+		requestEngine.onEvent eventA // Path 2
+		requestEngine.onEvent eventB // Path 2 - SUCCESS
+		requestEngine.onEvent eventC // Ignored
 		then :
 		patternDetected == 2
 	}

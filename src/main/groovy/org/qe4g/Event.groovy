@@ -17,12 +17,25 @@ class Event {
 	 * Attributes are key/value information about Event. The keys are String object, and value are Object.
 	 */
 	Map<String,Object> attributes = [:];
-	
+
 	/**
 	 * Warning : This property is not used inside the equals and hashCode methods
 	 */
-	long triggeredTime
+	long triggeredTime = -1;
 
+	long creationTime;
+
+	public Event() {
+		creationTime = System.currentTimeMillis();
+	}
+
+	public long getTime() {
+		if(triggeredTime == -1) {
+			return creationTime;
+		}
+		return triggeredTime;
+	}
+	
 	/**
 	 * @return <code>true</code> if event contains no names else return <code>false</code>
 	 */
@@ -32,7 +45,6 @@ class Event {
 
 	@Override
 	public String toString() {
-		"Event[names:$names;attributes:$attributes]"
+		"Event[names:$names;attributes:$attributes;time:${this.getTime()}]"
 	}
-	
 }

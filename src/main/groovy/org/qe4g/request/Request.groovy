@@ -80,7 +80,7 @@ class Request {
 
 	private Comparator<Event> timeBasedComparator = new Comparator<Event>() {
 		public int compare(Event ev1, Event ev2) {
-			return ev1.triggeredTime - ev2.triggeredTime;
+			return ev1.getTime() - ev2.getTime();
 		}
 	};
 

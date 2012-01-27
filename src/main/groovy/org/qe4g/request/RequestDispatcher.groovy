@@ -4,6 +4,8 @@ import static org.qe4g.request.graph.EventNodes.*
 
 import org.qe4g.Event
 import org.qe4g.request.graph.EventNodes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.tinkerpop.blueprints.pgm.Edge;
 import com.tinkerpop.blueprints.pgm.Graph
@@ -15,6 +17,8 @@ import static org.qe4g.request.graph.MyGraph.*;
 
 class RequestDispatcher {
 
+	final static Logger logger = LoggerFactory.getLogger(RequestDispatcher.class);
+	
 	private List<Request> requests;
 
 	private Vertex eventTypeRegistry;
@@ -25,14 +29,10 @@ class RequestDispatcher {
 		}
 		def selectedRequests = requests.findAll {it.accept(event)}
 		if(selectedRequests.isEmpty()) {
+			logger.info("Ignored - Event {}", event);
 			return
 		}
-		Vertex currentVertex = graph() << [event:event,type:EVENT,scope:'single']
-		def oldSameVertex = (1 % eventTypeRegistry >> [label:REFER]).find {EventNodes.areEquals(it,currentVertex)}
-		if(oldSameVertex != null) {
-			oldSameVertex << ANCESTROR << currentVertex
-			(oldSameVertex << REFER) --
-		}
+		Vertex currentVertex = graph() << [event:event,type:EVENT]
 		currentVertex << REFER << eventTypeRegistry
 		selectedRequests.each { Request request -> request.onNodeEvent(currentVertex) }
 	}
