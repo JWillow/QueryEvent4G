@@ -32,7 +32,9 @@ class SimpleEventEvaluator implements Evaluator {
 
 	public boolean evaluateRelationship(Vertex vEvaluationContext, Vertex vEvent) {
 
-		List<Event> events =  ((0 % vEvaluationContext >> PREVIOUS)).collect {Vertex vEvalContext ->
+		List<Vertex> vEvaluationContexts = [vEvaluationContext];
+		vEvaluationContexts + (0 % vEvaluationContext >> PREVIOUS);
+		List<Event> events =  vEvaluationContexts.collect {Vertex vEvalContext ->
 			(1 % vEvalContext >> EVALUATED)[0].event
 		}
 

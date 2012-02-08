@@ -78,8 +78,6 @@ class EventBasedOnNameAndAttributeWithOccurIntegration extends Specification {
 		patternDetected == 1
 	}
 
-
-
 	def "Simple case, we define a pattern on two named event and attribute criteria with occurs criteria on second Event. Positive evaluation, test max limit"() {
 		setup:
 		definedPatternBasedOnNamedEventAndAttributeValueWithOccurs({true},newEventB(), 2..3)
@@ -131,21 +129,22 @@ class EventBasedOnNameAndAttributeWithOccurIntegration extends Specification {
 		requestEngine.onEvent newEventA()
 		requestEngine.onEvent newEventB()
 		// FAILED
-		//requestEngine.onEvent newEventB()
+		requestEngine.onEvent newEventB()
 		// OK
-		//requestEngine.onEvent newEventA()
-		//requestEngine.onEvent newEventA()
-		//requestEngine.onEvent newEventA()
-		//requestEngine.onEvent newEventB()
+		requestEngine.onEvent newEventA()
+		requestEngine.onEvent newEventA()
+		requestEngine.onEvent newEventA()
+		requestEngine.onEvent newEventB()
 		// FAILED
-		//requestEngine.onEvent newEventA()
-		//requestEngine.onEvent newEventA()
-		//requestEngine.onEvent newEventA()
-		//requestEngine.onEvent newEventA()
-		//requestEngine.onEvent newEventB()
+		requestEngine.onEvent newEventA()
+		// OK
+		requestEngine.onEvent newEventA()
+		requestEngine.onEvent newEventA()
+		requestEngine.onEvent newEventA()
+		requestEngine.onEvent newEventB()
 
 		then :
-		patternDetected == 1
+		patternDetected == 3
 	}
 
 	def "Simple case, we define a pattern on two named event and attribute criteria with occurs criteria. Test optional event. Positive evaluation"() {

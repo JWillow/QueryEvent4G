@@ -79,13 +79,16 @@ class Pattern {
 		List<Vertex> selected = (1 % vEvaluator << DEPEND_ON).findAll { Vertex vEvaluationContext ->
 			return ((vEvaluationContext.state == KO_BUT_KEEP_ME
 			|| vEvaluationContext.state == OK_BUT_KEEP_ME)
-			&& evaluator.evaluateRelationship(vEvaluationContext, vEvent) && areSameEventSet(vEvaluationContext, vEvent));
+			&& evaluator.evaluateRelationship(vEvaluationContext, vEvent) 
+			&& areSameEventSet(vEvaluationContext, vEvent));
 		};
 
 		if(selected.empty) {
 			if(vEvaluator.canBeginPattern) {
 				(1 % vEvaluator << DEPEND_ON).find {Vertex vEvaluationContext ->
-					boolean result = vEvaluationContext.state == OK && (1 % vEvaluationContext << PREVIOUS).isEmpty() && areSameEventSet(vEvaluationContext, vEvent);
+					boolean result = (vEvaluationContext.state == OK
+							&& (1 % vEvaluationContext << PREVIOUS).isEmpty()
+							&& areSameEventSet(vEvaluationContext, vEvent));
 					if(result == false) {
 						return false;
 					}
@@ -95,9 +98,13 @@ class Pattern {
 					Vertex vFirstEvent = (1 % vPath >> FIRST_EVENT).unique();
 					Vertex nextEvent = (1 % vFirstEvent << PREVIOUS).unique();
 					vFirstEvent --;
-					vPath >> FIRST_EVENT >> nextEvent
+					if(nextEvent != null) {
+						vPath >> FIRST_EVENT >> nextEvent
+					} else {
+						vPath >> FIRST_EVENT >> vEvent
+					}
 					if((1 % vPath >> LAST_EVENT).isEmpty()) {
-						vPath >> LAST_EVENT >> nextEvent
+						vPath >> LAST_EVENT >> vEvent
 					}
 					return true;
 				}
@@ -109,7 +116,7 @@ class Pattern {
 			}
 		} else {
 			logger.infoG("Evaluation Context found at selected evaluator level : {}", selected);
-		}
+		} 
 
 		List<Vertex> vEvaluationContextsSelected = [];
 		Vertex vPreviousEvaluator = (1 % vEvaluator << NEXT).unique();
@@ -128,7 +135,7 @@ class Pattern {
 			}
 			vPreviousEvaluator = (1 % vPreviousEvaluator << NEXT).unique();
 		}
-		
+
 		return selected;
 	}
 
@@ -136,7 +143,7 @@ class Pattern {
 		Evaluator evaluator = vEvaluator.evaluator;
 		(1 % vEvaluator << DEPEND_ON).findAll { Vertex vEvaluationContext ->
 			return ((vEvaluationContext.state == OK)
-			&& evaluator.evaluateRelationship(vEvaluationContext, vEvent));
+			&& areSameEventSet(vEvaluationContext, vEvent));
 		}.each {remove(it)}
 	}
 
