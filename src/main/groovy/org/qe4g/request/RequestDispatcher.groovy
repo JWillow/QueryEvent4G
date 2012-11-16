@@ -2,6 +2,7 @@ package org.qe4g.request
 
 import static org.qe4g.request.graph.EventNodes.*
 
+
 import org.qe4g.Event
 import org.qe4g.request.graph.EventNodes;
 import org.slf4j.Logger;
@@ -22,7 +23,9 @@ class RequestDispatcher {
 	private List<Request> requests;
 
 	private Vertex eventTypeRegistry;
-
+	
+	private EventLifeManager eventLifeManager = new EventLifeManager()
+	
 	public void onEvent(Event event) {
 		if(event.isInconsistent()) {
 			return;
@@ -33,6 +36,7 @@ class RequestDispatcher {
 			return
 		}
 		Vertex currentVertex = graph() << [event:event,type:EVENT]
+		eventLifeManager.handle(currentVertex)
 		currentVertex << REFER << eventTypeRegistry
 		selectedRequests.each { Request request -> request.onNodeEvent(currentVertex) }
 	}

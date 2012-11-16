@@ -7,6 +7,7 @@ import static org.qe4g.request.graph.MyGraph.*
 import org.qe4g.request.evaluation.Evaluator;
 import groovy.lang.Closure
 
+import java.util.Collections;
 import java.util.List
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -42,45 +43,97 @@ class Pattern {
 	def accept = { true }
 
 	/**
-	 * @param vEvent 
-	 * @return Collection of Vertex of type Path
+	 * Entry point for a Pattern to perform the event correlation with others events 
+	 * @param vEvent - Vertex of type Event
+	 * @return {@link Collections} of Verteces of type {@link VertexTypes#PATH}, if paths are completed, else return an empty {@link Collections}
 	 */
 	public Collection<Vertex> correlate(final Vertex vEvent) {
 		logger.debugG("*************************************************************");
 		logger.debugG("correlate {}", vEvent);
-		List<Vertex> vEvaluatorSelected = evaluateOnStaticCriteria(vEvent)
-		if(!checkEvaluatorAndResetIfNecessary(vEvent, vEvaluatorSelected)) {
+		List<Vertex> vEvaluatorsSelected = vEvaluators.findAll {	it.evaluateOnStaticCriteria(vEvent)	}
+		if(vEvaluatorsSelected.empty) {
+			logger.infoG("Not found - Evaluator {} - Reset all ! ", vEvent);
+			vEvent--
+			vEvaluators.each { it.reset()}
 			return []
 		}
 
-		List<Vertex> paths = select(vEvent,vEvaluatorSelected)
+		List<Vertex> paths = select(vEvent,vEvaluatorsSelected)
 
 		def globalResult =
 				paths.findAll {Vertex vEvaluationContext ->
 					Vertex vEvaluator = (1 % vEvaluationContext >> DEPEND_ON).unique()
-					OccurResponse response = vEvaluator.evaluator.evaluateOnOccurrenceCriteria(vEvaluationContext, vEvent)
+					OccurResponse response = vEvaluator.evaluateOnOccurrenceCriteria(vEvaluationContext, vEvent)
 					return (response == OK || response == OK_BUT_KEEP_ME) && (1 % vEvaluator >> NEXT).empty;
 				}.collect {(1 % it << CURRENT_EVAL_CONTEXT).unique()}
 
 		return globalResult
 	}
 
-	private boolean areSameEventSet(Vertex vEvaluationContext, Vertex vEvent) {
-		Event currentEvaluationContextEvent = null;
-		List<Vertex> associatedVEvents = (1 % vEvaluationContext >> EVALUATED)
-		if(associatedVEvents.isEmpty()) {
-			return true;
+	/**
+	 * <p>Select all {@link VertexTypes#EVALUATION_CONTEXT} concern by {@link VertexTypes#EVENT}
+	 * <p>Create new {@link VertexTypes#EVALUATION_CONTEXT} if event can be used to begin a 
+	 * new Path
+	 * <p>Remove Path if the event break it.
+	 * 
+	 * @param vEvent - {@link VertexTypes#EVENT}
+	 * @param vEvaluatorsSelected of {@link VertexTypes#EVALUATOR}. They have been selected after a positive static evaluation on {@link Evaluator} associated.
+	 * @return Verteces List of {@link VertexTypes#EVALUATION_CONTEXT}
+	 */
+	List<Vertex> select(final Vertex vEvent, List<Vertex> vEvaluatorsSelectedOnStaticEvaluation) {
+		def selected = [];
+		vEvaluatorsSelectedOnStaticEvaluation.each { Vertex vEvaluator ->
+			List<Vertex> localSelection = primarySelectOfEvaluationContext(vEvent,vEvaluator);
+			if(localSelection.empty) {
+				searchAndRemoveInProgressEvaluationContext(vEvent,vEvaluator);
+			} else {
+				selected + localSelection.findAll {!searchOldEventAndRemoveEvaluationContext(vEvaluator, it)}
+				.collect { Vertex vEvaluationContext ->
+					attachOrCreateNewEvaluationContext(vEvent,vEvaluator,vEvaluationContext);
+				}
+			}
 		}
-		return associatedVEvents[0].event.names == vEvent.event.names && associatedVEvents[0].event.attributes == vEvent.event.attributes;
+
+		// PERMET LE DEBUT DU PATTERN
+		if(selected.empty && vEvaluatorsSelectedOnStaticEvaluation.find{it.canBeginPattern}) {
+			Vertex vEvaluationContext = graph() << [type:EVALUATION_CONTEXT,state:null,occur:0];
+			Vertex vPath = graph() << PATH;
+			vPath >> CURRENT_EVAL_CONTEXT >> vEvaluationContext;
+			vEvaluationContext >> DEPEND_ON >> vEvaluatorsSelectedOnStaticEvaluation.last();
+			vEvaluationContext >> EVALUATED >> vEvent;
+			vPath >> FIRST_EVENT >> vEvent;
+			vPath >> LAST_EVENT >> vEvent;
+			logger.infoG("Created - EvaluationContext({})/Path({})/Evaluator({})",vEvaluationContext,vPath,vEvaluatorsSelectedOnStaticEvaluation.last());
+			selected << vEvaluationContext;
+		}
+
+		if(selected.empty) {
+			vEvaluatorsSelectedOnStaticEvaluation.each { Vertex vEvaluator ->
+				logger.infoG("No Evaluation Context found for event {} ! we attached it directly to evaluator {}", vEvent, vEvaluator);
+				(vEvent >> ATTACHED >> vEvaluator)
+			};
+		} else {
+			logger.infoG("Evaluation Context [{}] found for event [{}]",selected,vEvent);
+		}
+		return selected
 	}
 
+
+	/**
+	 * <p>Select  {@link VertexTypes#EVALUATION_CONTEXT} that are in {@link OccurResponse#KO_BUT_KEEP_ME} 
+	 * or {@link OccurResponse#OK_BUT_KEEP_ME} state.
+	 * <p>If no Verteces are found in the first step, we lookup if an evaluator can start a new pattern 
+	 * @param vEvent - {@link VertexTypes#EVENT}
+	 * @param vEvaluator - {@link VertexTypes#EVALUATOR}
+	 * @return
+	 */
 	private List<Vertex> primarySelectOfEvaluationContext(final Vertex vEvent, final Vertex vEvaluator) {
 		Evaluator evaluator = vEvaluator.evaluator;
 		List<Vertex> selected = (1 % vEvaluator << DEPEND_ON).findAll { Vertex vEvaluationContext ->
 			return ((vEvaluationContext.state == KO_BUT_KEEP_ME
 			|| vEvaluationContext.state == OK_BUT_KEEP_ME)
-			&& evaluator.evaluateRelationship(vEvaluationContext, vEvent) 
-			&& areSameEventSet(vEvaluationContext, vEvent));
+			&& evaluator.evaluateRelationship(vEvaluationContext, vEvent)
+			&& vEvaluationContext.areSameEventSet(vEvent));
 		};
 
 		if(selected.empty) {
@@ -88,13 +141,13 @@ class Pattern {
 				(1 % vEvaluator << DEPEND_ON).find {Vertex vEvaluationContext ->
 					boolean result = (vEvaluationContext.state == OK
 							&& (1 % vEvaluationContext << PREVIOUS).isEmpty()
-							&& areSameEventSet(vEvaluationContext, vEvent));
+							&& vEvaluationContext.areSameEventSet(vEvent));
 					if(result == false) {
 						return false;
 					}
 					selected << vEvaluationContext;
 					// REPOSITIONNEMENT DU START_EVENT
-					Vertex vPath = (1 % vEvaluationContext << CURRENT_EVAL_CONTEXT).unique()
+					Vertex vPath = (1 % vEvaluationContext << CURRENT_EVAL_CONTEXT).unique();
 					Vertex vFirstEvent = (1 % vPath >> FIRST_EVENT).unique();
 					Vertex nextEvent = (1 % vFirstEvent << PREVIOUS).unique();
 					vFirstEvent --;
@@ -116,9 +169,8 @@ class Pattern {
 			}
 		} else {
 			logger.infoG("Evaluation Context found at selected evaluator level : {}", selected);
-		} 
+		}
 
-		List<Vertex> vEvaluationContextsSelected = [];
 		Vertex vPreviousEvaluator = (1 % vEvaluator << NEXT).unique();
 		while(vPreviousEvaluator != null) {
 			logger.debugG("Search on Evaluator : {}",vPreviousEvaluator);
@@ -139,12 +191,16 @@ class Pattern {
 		return selected;
 	}
 
+
 	private void searchAndRemoveInProgressEvaluationContext(final Vertex vEvent, final Vertex vEvaluator) {
 		Evaluator evaluator = vEvaluator.evaluator;
 		(1 % vEvaluator << DEPEND_ON).findAll { Vertex vEvaluationContext ->
 			return ((vEvaluationContext.state == OK)
-			&& areSameEventSet(vEvaluationContext, vEvent));
-		}.each {remove(it)}
+			&& vEvaluationContext.areSameEventSet(vEvent));
+		}.each {
+			//it.removePath()
+			it.reset()
+		}
 	}
 
 	private Vertex attachOrCreateNewEvaluationContext(Vertex vEvent, Vertex vEvaluator, Vertex vEvaluationContext) {
@@ -170,38 +226,6 @@ class Pattern {
 	}
 
 
-	private boolean reevaluate(Vertex vPath, long timeToCompare, Vertex vEvent) {
-		Set<Vertex> evaluationContextToReevaluate = [];
-
-		while(vEvent != null && timeToCompare > vEvent.event.getTime()) {
-			evaluationContextToReevaluate + (1 % vEvent << EVALUATED).unique();
-			Vertex nextVEvent = (1 % vEvent << PREVIOUS).unique();
-			vEvent --;
-			vEvent = nextVEvent;
-			if(vEvent != null) {
-				vEvent << FIRST_EVENT << vPath
-			}
-		}
-
-		boolean toRemove = evaluationContextToReevaluate.find {Vertex vEvaluationContext ->
-			Vertex vEvaluator = (1 % vEvaluationContext >> DEPEND_ON).unique();
-			vEvaluationContext.occur = 0
-			vEvaluationContext.state = null
-			Collection<Vertex> vEvents = (1 % vEvaluation >> EVALUATED);
-			if(vEvents.isEmpty() && !vEvaluator.isOptional()) {
-				return true;
-			}
-			vEvents.each {
-				vEvaluator.evaluator.evaluateOnOccurrenceCriteria(vEvaluationContext, it);
-			}
-			return vEvaluationContext.state == OccurResponse.KO_BUT_KEEP_ME;
-		}
-		return toRemove;
-
-		// Réévaluer les EVALUATION_CONTEXT en fonction du critère occurs
-	}
-
-
 	private boolean searchOldEventAndRemoveEvaluationContext(final Vertex vEvaluator, final Vertex vEvaluationContext) {
 		logger.debugG("searchOldEventAndRemoveEvaluationContext")
 		Evaluator evaluator = vEvaluator.evaluator;
@@ -209,7 +233,7 @@ class Pattern {
 			if(evaluator.evaluateRelationship(vEvaluationContext, vOldEvent)) {
 				Vertex vLinkedEventPath = ( 1 % vEvaluationContext << CURRENT_EVAL_CONTEXT).unique()
 				Vertex firstEvent = (1 % vLinkedEventPath >> FIRST_EVENT).unique();
-				return reevaluate(vLinkedEventPath, vOldEvent.event.getTime(), firstEvent);
+				return vLinkedEventPath.reevaluate(vOldEvent.event.getTime(), firstEvent);
 			}
 			return false;
 		};
@@ -219,112 +243,6 @@ class Pattern {
 			return true;
 		}
 		return false;
-	}
-
-	/**
-	 * Select path from event passed in parameter
-	 * @param vEvent
-	 * @return Vertex List of Path Type
-	 */
-	List<Vertex> select(final Vertex vEvent, List<Vertex> vEvaluatorsSelected) {
-		def selected = [];
-		vEvaluatorsSelected.each { Vertex vEvaluator ->
-			def localSelection = primarySelectOfEvaluationContext(vEvent,vEvaluator);
-			if(localSelection.empty) {
-				searchAndRemoveInProgressEvaluationContext(vEvent,vEvaluator);
-			} else {
-				selected + localSelection.findAll {!searchOldEventAndRemoveEvaluationContext(vEvaluator, it)}
-				.collect { Vertex vEvaluationContext ->
-					attachOrCreateNewEvaluationContext(vEvent,vEvaluator,vEvaluationContext);
-				}
-			}
-		}
-
-		// PERMET LE DEBUT DU PATTERN
-		if(selected.empty && vEvaluatorsSelected.find{it.canBeginPattern}) {
-			Vertex vEvaluationContext = graph() << [type:EVALUATION_CONTEXT,state:null,occur:0];
-			Vertex vPath = graph() << PATH;
-			vPath >> CURRENT_EVAL_CONTEXT >> vEvaluationContext;
-			vEvaluationContext >> DEPEND_ON >> vEvaluatorsSelected.last();
-			vEvaluationContext >> EVALUATED >> vEvent;
-			vPath >> FIRST_EVENT >> vEvent;
-			vPath >> LAST_EVENT >> vEvent;
-			logger.infoG("Created - EvaluationContext({})/Path({})/Evaluator({})",vEvaluationContext,vPath,vEvaluatorsSelected.last());
-			selected << vEvaluationContext;
-		}
-
-		if(selected.empty) {
-			vEvaluatorsSelected.each { Vertex vEvaluator ->
-				logger.infoG("No Evaluation Context found for event {} ! we attached it directly to evaluator {}", vEvent, vEvaluator);
-				(vEvent >> ATTACHED >> vEvaluator)
-			};
-		} else {
-			logger.infoG("Evaluation Context [{}] found for event [{}]",selected,vEvent);
-		}
-		return selected
-	}
-
-	private void reset() {
-		vEvaluators.each { evaluator ->
-			(1 % evaluator << DEPEND_ON).each { Vertex vEvaluationContext ->
-				Vertex vPath = (1 % vEvaluationContext << CURRENT_EVAL_CONTEXT).unique();
-				(0 % vEvaluationContext << PREVIOUS).each {
-					if(vPath == null) {
-						vPath = (1 % vEvaluationContext << CURRENT_EVAL_CONTEXT).unique();
-					}
-					it--;
-				}
-				vEvaluationContext--
-				vPath--
-			}
-		}
-	}
-
-	private void remove(Vertex vEvaluationContext) {
-		logger.infoG("Removed - EvaluationContext {} and all dependencies", vEvaluationContext);
-
-		List<Vertex> vEvents = [];
-		List<Vertex> vEvaluationContexts = [vEvaluationContext];
-		vEvaluationContexts + (0 % vEvaluationContext >> PREVIOUS)
-		vEvaluationContexts + (0 % vEvaluationContext << PREVIOUS)
-
-		Vertex vPath = null;
-		vEvaluationContexts.each {
-			logger.debugG("Removed - EvaluationContext {}", it)
-			vEvents + (1 % it >> EVALUATED)
-			if(vPath == null) {
-				vPath = (1 % it << CURRENT_EVAL_CONTEXT).unique()
-			}
-			it--;
-		}
-		logger.debugG("Removed - Path {}", vPath);
-		vPath --;
-
-		vEvents.findAll{(1 % it << EVALUATED).empty && (1 % it >> ATTACHED).empty}
-		.each{logger.debugG("Deleted - Event {}",it); it--};
-
-	}
-
-
-	private boolean checkEvaluatorAndResetIfNecessary(final Vertex vEvent, final List<Vertex> vEvaluatorsSelected) {
-		if(vEvaluatorsSelected.empty) {
-			logger.infoG("Not found - Evaluator {} - Reset all ! ", vEvent);
-			vEvent--
-			reset()
-			return false
-		}
-		return true
-	}
-
-	private List<Vertex> evaluateOnStaticCriteria(Vertex vEvent) {
-		List<Vertex> vEvaluatorSelected = []
-		vEvaluators.each {
-			if(it.evaluator.evaluateOnStaticCriteria(vEvent)) {
-				it >> ATTACHED >> vEvent
-				vEvaluatorSelected << it
-			}
-		}
-		return vEvaluatorSelected
 	}
 
 	// ------------

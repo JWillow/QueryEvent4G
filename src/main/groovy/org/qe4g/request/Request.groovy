@@ -78,7 +78,7 @@ class Request {
 		return pattern.accept(event)
 	}
 
-	private Comparator<Event> timeBasedComparator = new Comparator<Event>() {
+	private static final Comparator<Event> timeBasedComparator = new Comparator<Event>() {
 		public int compare(Event ev1, Event ev2) {
 			return ev1.getTime() - ev2.getTime();
 		}
